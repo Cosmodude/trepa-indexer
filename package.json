@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "rm -rf lib && tsc"
+    "build": "rm -rf lib && tsc",
+    "start": "ts-node src/main.ts"
   },
   "dependencies": {
     "@subsquid/batch-processor": "^0.0.0",

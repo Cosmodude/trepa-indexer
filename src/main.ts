@@ -2,186 +2,85 @@ import {run} from '@subsquid/batch-processor'
 import {augmentBlock} from '@subsquid/solana-objects'
 import {DataSourceBuilder, SolanaRpcClient} from '@subsquid/solana-stream'
 import {TypeormDatabase} from '@subsquid/typeorm-store'
-import assert from 'assert'
-import * as tokenProgram from './abi/token-program'
 import * as trepa from './abi/trepa'
-import {Exchange} from './model'
 
-// First we create a DataSource - component,
-// that defines where to get the data and what data should we get.
+import { TrepaEvent } from "./model"
+import {config} from './config'
+
 const dataSource = new DataSourceBuilder()
-    // Provide Subsquid Network Gateway URL.
-    .setGateway('https://v2.archive.subsquid.io/network/solana-devnet')
-    // Subsquid Network is always about 1000 blocks behind the head.
-    .setRpc(process.env.SOLANA_NODE == null ? undefined : {
+    //.setGateway('https://v2.archive.subsquid.io/network/solana-mainnet')
+    .setRpc({
         client: new SolanaRpcClient({
-            url: process.env.SOLANA_NODE,
-            // rateLimit: 100 // requests per sec
+            url: config.solana.rpcUrl,
+            // rateLimit: 100
         }),
         strideConcurrency: 10
     })
-    // Currently only blocks from 260000000 and above are stored in Subsquid Network.
-    // NOTE, that block ranges are specified in heights, not in slots !!!
-    //
-    .setBlockRange({from: 269828500})
-    //
-    // Block data returned by the data source has the following structure:
-    //
-    // interface Block {
-    //     header: BlockHeader
-    //     transactions: Transaction[]
-    //     instructions: Instruction[]
-    //     logs: LogMessage[]
-    //     balances: Balance[]
-    //     tokenBalances: TokenBalance[]
-    //     rewards: Reward[]
-    // }
-    //
-    // For each block item we can specify a set of fields we want to fetch via `.setFields()` method.
-    // Think about it as of SQL projection.
-    //
-    // Accurate selection of only required fields can have a notable positive impact
-    // on performance when data is sourced from Subsquid Network.
-    //
-    // We do it below only for illustration as all fields we've selected
-    // are fetched by default.
-    //
-    // It is possible to override default selection by setting undesired fields to `false`.
+    .setBlockRange({from: 400107860})
     .setFields({
-        block: { // block header fields
+        block: {
             timestamp: true
         },
-        transaction: { // transaction fields
+        transaction: {
             signatures: true
         },
-        instruction: { // instruction fields
+        log: {
             programId: true,
-            accounts: true,
             data: true
-        },
-        tokenBalance: { // token balance record fields
-            preAmount: true,
-            postAmount: true,
-            preOwner: true,
-            postOwner: true
         }
     })
-    // By default, block can be skipped if it doesn't contain explicitly requested items.
-    //
-    // We request items via `.addXxx()` methods.
-    //
-    // Each `.addXxx()` method accepts item selection criteria
-    // and also allows to request related items.
-    //
-    .addInstruction({
-        // select instructions, that:
+    .addLog({
         where: {
-            programId: [trepa.programId], // where executed by Whirlpool program
-            d8: [trepa.instructions.predict.d8], // have first 8 bytes of .data equal to swap descriptor
-            ...trepa.instructions.predict.accountSelection({ // limiting to USDC-SOL pair only
-                predictor: ['7qbRF6YsyGuLUVs6Y1q64bdVrfe4ZcUUz1JRdoVNUJnm']
-            }),
-            isCommitted: true // where successfully committed
+            programId: [trepa.programId]
         },
-        // for each instruction selected above
-        // make sure to also include:
         include: {
-            innerInstructions: true, // inner instructions
-            transaction: true, // transaction, that executed the given instruction
-            transactionTokenBalances: true, // all token balance records of executed transaction
+            transaction: true
         }
     }).build()
 
-
-// Once we've prepared a data source we can start fetching the data right away:
-//
-// for await (let batch of dataSource.getBlockStream()) {
-//     for (let block of batch) {
-//         console.log(block)
-//     }
-// }
-//
-// However, Subsquid SDK can also help to decode and persist the data.
-//
-
-// Data processing in Subsquid SDK is defined by four components:
-//
-//  1. Data source (such as we've created above)
-//  2. Database
-//  3. Data handler
-//  4. Processor
-//
-// Database is responsible for persisting the work progress (last processed block)
-// and for providing storage API to the data handler.
-//
-// Data handler is a user defined function which accepts consecutive block batches,
-// storage API and is responsible for entire data transformation.
-//
-// Processor connects and executes above three components.
-//
-
-// Below we create a `TypeormDatabase`.
-//
-// It provides restricted subset of [TypeORM EntityManager API](https://typeorm.io/working-with-entity-manager)
-// as a persistent storage interface and works with any Postgres-compatible database.
-//
-// Note, that we don't pass any database connection parameters.
-// That's because `TypeormDatabase` expects a certain project structure
-// and environment variables to pick everything it needs by convention.
-// Companion `@subsquid/typeorm-migration` tool works in the same way.
-//
-// For full configuration details please consult
-// https://github.com/subsquid/squid-sdk/blob/278195bd5a5ed0a9e24bfb99ee7bbb86ff94ccb3/typeorm/typeorm-config/src/config.ts#L21
-const database = new TypeormDatabase()
-
-
-// Now we are ready to start data processing
-run(dataSource, database, async ctx => {
-    // Block items that we get from `ctx.blocks` are flat JS objects.
-    //
-    // We can use `augmentBlock()` function from `@subsquid/solana-objects`
-    // to enrich block items with references to related objects and
-    // with convenient getters for derived data (e.g. `Instruction.d8`).
+run(dataSource, new TypeormDatabase(), async ctx => {
     let blocks = ctx.blocks.map(augmentBlock)
 
-    let exchanges: Exchange[] = []
-
     for (let block of blocks) {
-        for (let ins of block.instructions) {
-            // https://read.cryptodatabytes.com/p/starter-guide-to-solana-data-analysis
-            if (ins.programId === trepa.programId && ins.d8 === trepa.instructions.predict.d8) {
-                let exchange = new Exchange({
-                    id: ins.id,
-                    slot: block.header.slot,
-                    tx: ins.getTransaction().signatures[0],
-                    timestamp: new Date(block.header.timestamp * 1000)
-                })
-
-                assert(ins.inner.length == 2)
-                let srcTransfer = tokenProgram.instructions.transfer.decode(ins.inner[0])
-                let destTransfer = tokenProgram.instructions.transfer.decode(ins.inner[1])
-
-                let srcBalance = ins.getTransaction().tokenBalances.find(tb => tb.account == srcTransfer.accounts.source)
-                let destBalance = ins.getTransaction().tokenBalances.find(tb => tb.account === destTransfer.accounts.destination)
-
-                let srcMint = ins.getTransaction().tokenBalances.find(tb => tb.account === srcTransfer.accounts.destination)?.preMint
-                let destMint = ins.getTransaction().tokenBalances.find(tb => tb.account === destTransfer.accounts.source)?.preMint
-
-                assert(srcMint)
-                assert(destMint)
-
-                exchange.fromToken = srcMint
-                exchange.fromOwner = srcBalance?.preOwner || srcTransfer.accounts.source
-                exchange.fromAmount = srcTransfer.data.amount
-
-                exchange.toToken = destMint
-                exchange.toOwner = destBalance?.postOwner || destBalance?.preOwner || destTransfer.accounts.destination
-                exchange.toAmount = destTransfer.data.amount
-
-                exchanges.push(exchange)
+        for (let log of block.logs) {
+            if (log.programId === trepa.programId) {
+                try {
+                    const logData = (log as any).data
+                    if (logData) {
+                        const logBuffer = Buffer.from(logData, 'base64')
+                        const discriminator = logBuffer.subarray(0, 8)
+                        const expectedDiscriminator = Buffer.from(trepa.events.PoolPredictedEvent.d8.slice(2), 'hex')
+                        
+                        if (discriminator.equals(expectedDiscriminator)) {
+                            const predictedEvent = trepa.events.PoolPredictedEvent.decode({msg: logData})
+                            
+                            const trepaEvent = new TrepaEvent({
+                                id: log.getTransaction()?.signatures[0] || 'unknown',
+                                transactionSignature: log.getTransaction()?.signatures[0] || 'unknown',
+                                timestamp: new Date(block.header.timestamp * 1000),
+                                poolAccount: predictedEvent.poolAccount,
+                                predictor: predictedEvent.predictor,
+                                poolTokenAccount: predictedEvent.poolTokenAccount,
+                                predictionAccount: predictedEvent.predictionAccount,
+                                stake: predictedEvent.stake.toString(),
+                                feePayer: predictedEvent.feePayer
+                            })
+                            
+                            await ctx.store.insert(trepaEvent)
+                            
+                            console.log('PoolPredictedEvent saved:', {
+                                poolAccount: predictedEvent.poolAccount,
+                                predictor: predictedEvent.predictor,
+                                stake: predictedEvent.stake.toString(),
+                                timestamp: new Date(block.header.timestamp * 1000),
+                                tx: log.getTransaction()?.signatures[0] || 'unknown'
+                            })
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to decode PoolPredictedEvent:', error)
+                }
             }
         }
     }
-
-    await ctx.store.insert(exchanges)
 })

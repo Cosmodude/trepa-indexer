@@ -1,1 +1,1 @@
-export * from './exchange.model'
+export * from './trepa-event.model'
