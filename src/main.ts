@@ -66,39 +66,73 @@ async function startIndexer() {
             
             for (let log of block.logs) {
                 if (log.programId === trepa.programId) {
-                    console.log(`Block ${block.header.height}: ${block.logs.length} logs`)
+                    console.log(`Log ${log.id}: programId: ${log.programId} checked`)
+                    console.log(`Log object keys: ${Object.keys(log)}`)
+                    console.log(`Log object:`, JSON.stringify(log, null, 2))
                     try {
-                        const logData = (log as any).data
-                        if (logData) {
-                            const logBuffer = Buffer.from(logData, 'base64')
-                            const discriminator = logBuffer.subarray(0, 8)
-                            const expectedDiscriminator = Buffer.from(trepa.events.PoolPredictedEvent.d8.slice(2), 'hex')
-                            
-                            if (discriminator.equals(expectedDiscriminator)) {
-                                console.log('PoolPredictedEvent found')
-                                const predictedEvent = trepa.events.PoolPredictedEvent.decode({msg: logData})
+                        const logData = (log as any).data || (log as any).message
+                        console.log(`Log data exists: ${!!logData}`)
+                        console.log(`Log kind: ${(log as any).kind}`)
+                        if (logData && (log as any).kind === 'data') {
+                                console.log(`Processing data log with length: ${logData.length}`)
+                                const logBuffer = Buffer.from(logData, 'base64')
+                                console.log(`Buffer length: ${logBuffer.length}`)
+                                console.log(`Buffer (first 32 bytes): ${logBuffer.subarray(0, 32).toString('hex')}`)
                                 
-                                const trepaEvent = new TrepaEvent({
-                                    id: log.getTransaction()?.signatures[0] || 'unknown',
-                                    transactionSignature: log.getTransaction()?.signatures[0] || 'unknown',
-                                    timestamp: new Date(block.header.timestamp * 1000),
-                                    poolAccount: predictedEvent.poolAccount,
-                                    predictor: predictedEvent.predictor,
-                                    poolTokenAccount: predictedEvent.poolTokenAccount,
-                                    predictionAccount: predictedEvent.predictionAccount,
-                                    stake: predictedEvent.stake.toString(),
-                                    feePayer: predictedEvent.feePayer
-                                })
+                                if (logBuffer.length >= 8) {
+                                const discriminator = logBuffer.subarray(0, 8)
+                                console.log(`Discriminator: ${discriminator.toString('hex')}`)
                                 
-                                await ctx.store.insert(trepaEvent)
+                                // Check all possible event discriminators
+                                const eventDiscriminators = {
+                                    'PoolPredictedEvent': Buffer.from(trepa.events.PoolPredictedEvent.d8.slice(2), 'hex'),
+                                    'PoolCreatedEvent': Buffer.from(trepa.events.PoolCreatedEvent.d8.slice(2), 'hex'),
+                                    'PoolFinalizedEvent': Buffer.from(trepa.events.PoolFinalizedEvent.d8.slice(2), 'hex'),
+                                    'PoolClaimedEvent': Buffer.from(trepa.events.PoolClaimedEvent.d8.slice(2), 'hex'),
+                                    'ConfigUpdatedEvent': Buffer.from(trepa.events.ConfigUpdatedEvent.d8.slice(2), 'hex')
+                                }
                                 
-                                console.log('PoolPredictedEvent saved:', {
-                                    poolAccount: predictedEvent.poolAccount,
-                                    predictor: predictedEvent.predictor,
-                                    stake: predictedEvent.stake.toString(),
-                                    timestamp: new Date(block.header.timestamp * 1000),
-                                    tx: log.getTransaction()?.signatures[0] || 'unknown'
-                                })
+                                console.log('Checking discriminators:')
+                                for (const [eventName, expectedDisc] of Object.entries(eventDiscriminators)) {
+                                    console.log(`  ${eventName}: ${expectedDisc.toString('hex')} - ${discriminator.equals(expectedDisc) ? 'MATCH!' : 'no match'}`)
+                                }
+                                
+                                if (discriminator.equals(eventDiscriminators.PoolPredictedEvent)) {
+                                    console.log('PoolPredictedEvent found')
+                                    console.log(`Trying to decode with buffer length: ${logBuffer.length}`)
+                                    // Try with original data first
+                                    try {
+                                        // Convert base64 to hex format
+                                        const hexData = '0x' + logBuffer.toString('hex')
+                                        console.log(`Converting to hex: ${hexData.substring(0, 50)}...`)
+                                        const predictedEvent = trepa.events.PoolPredictedEvent.decode({msg: hexData})
+                                        console.log('Successfully decoded with hex data')
+                                        
+                                        const trepaEvent = new TrepaEvent({
+                                            id: log.getTransaction()?.signatures[0] || 'unknown',
+                                            transactionSignature: log.getTransaction()?.signatures[0] || 'unknown',
+                                            timestamp: new Date(block.header.timestamp * 1000),
+                                            poolAccount: predictedEvent.poolAccount,
+                                            predictor: predictedEvent.predictor,
+                                            poolTokenAccount: predictedEvent.poolTokenAccount,
+                                            predictionAccount: predictedEvent.predictionAccount,
+                                            stake: predictedEvent.stake.toString(),
+                                            feePayer: predictedEvent.feePayer
+                                        })
+                                    
+                                        await ctx.store.insert(trepaEvent)
+                                    
+                                        console.log('PoolPredictedEvent saved:', {
+                                            poolAccount: predictedEvent.poolAccount,
+                                            predictor: predictedEvent.predictor,
+                                            stake: predictedEvent.stake.toString(),
+                                            timestamp: new Date(block.header.timestamp * 1000),
+                                            tx: log.getTransaction()?.signatures[0] || 'unknown'
+                                        })
+                                    } catch (error) {
+                                        console.error('Failed to decode PoolPredictedEvent:', error)
+                                    }
+                                }
                             }
                         }
                     } catch (error) {
