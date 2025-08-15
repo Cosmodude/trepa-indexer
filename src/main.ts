@@ -16,7 +16,7 @@ const dataSource = new DataSourceBuilder()
         }),
         strideConcurrency: 2
     })
-    //.setBlockRange({from: 401_266_324}) // Start from a recent block
+    .setBlockRange({from: 389_273_353, to: 389_273_360}) // Focus on specific block range
     .setFields({
         block: {
             timestamp: true
@@ -29,12 +29,10 @@ const dataSource = new DataSourceBuilder()
             data: true
         }
     })
-    .includeAllBlocks()   
     .addLog({
-        // where: {
-        //     programId: [trepa.programId],
-        //     //kind: ['data']  
-        // },
+        where: {
+            programId: [trepa.programId]
+        },
         include: {
             transaction: true
         }
@@ -43,15 +41,14 @@ const dataSource = new DataSourceBuilder()
 console.log('Data source configuration:')
 console.log('- RPC URL:', config.solana.rpcUrl)
 console.log('- Program ID filter:', trepa.programId)
-console.log('About to start run function...')
 
 async function startIndexer() {
     console.log('Starting indexer with timeout...')
     
     const timeout = setTimeout(() => {
-        console.log('Indexer timeout - no data received in 60 seconds')
+        console.log('Indexer timeout - no data received in 30 seconds')
         process.exit(0)
-    }, 60_000)
+    }, 30_000)
     
     await run(dataSource, new TypeormDatabase(), async ctx => {
         clearTimeout(timeout)
@@ -62,9 +59,14 @@ async function startIndexer() {
         
         for (let block of blocks) {
             console.log(`Block ${block.header.height}: ${block.logs.length} logs`)
+            if (block.logs.length > 0) {
+                console.log('Log program IDs:', block.logs.map(l => l.programId))
+                console.log('Looking for Trepa program:', trepa.programId)
+            }
+            
             for (let log of block.logs) {
-                console.log(`Log programId: ${log.programId}, expected: ${trepa.programId}`)
                 if (log.programId === trepa.programId) {
+                    console.log(`Block ${block.header.height}: ${block.logs.length} logs`)
                     try {
                         const logData = (log as any).data
                         if (logData) {
@@ -73,6 +75,7 @@ async function startIndexer() {
                             const expectedDiscriminator = Buffer.from(trepa.events.PoolPredictedEvent.d8.slice(2), 'hex')
                             
                             if (discriminator.equals(expectedDiscriminator)) {
+                                console.log('PoolPredictedEvent found')
                                 const predictedEvent = trepa.events.PoolPredictedEvent.decode({msg: logData})
                                 
                                 const trepaEvent = new TrepaEvent({
