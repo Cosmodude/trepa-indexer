@@ -4,7 +4,12 @@ import {DataSourceBuilder, SolanaRpcClient} from '@subsquid/solana-stream'
 import {TypeormDatabase} from '@subsquid/typeorm-store'
 import * as trepa from './abi/trepa'
 
-import { TrepaEvent } from "./model"
+import { 
+    PredictedEvent, 
+    ClaimedEvent, 
+    PoolCreatedEvent, 
+    PoolFinalizedEvent 
+} from "./model"
 import {config} from './config'
 
 const dataSource = new DataSourceBuilder()
@@ -16,7 +21,7 @@ const dataSource = new DataSourceBuilder()
         }),
         strideConcurrency: 2
     })
-    .setBlockRange({from: 389_273_353, to: 389_273_360}) // Focus on specific block range
+    .setBlockRange({from: 389_273_353})
     .setFields({
         block: {
             timestamp: true
@@ -66,17 +71,20 @@ async function startIndexer() {
                             
                             if (logBuffer.length >= 8) {
                                 const discriminator = logBuffer.subarray(0, 8)
-                                const expectedDiscriminator = Buffer.from(trepa.events.PoolPredictedEvent.d8.slice(2), 'hex')
-                                
-                                if (discriminator.equals(expectedDiscriminator)) {
+                                const hexData = '0x' + logBuffer.toString('hex')
+                                const txSignature = log.getTransaction()?.signatures[0] || 'unknown'
+                                const timestamp = new Date(block.header.timestamp * 1000)
+
+                                // PoolPredictedEvent
+                                const predictedDiscriminator = Buffer.from(trepa.events.PoolPredictedEvent.d8.slice(2), 'hex')
+                                if (discriminator.equals(predictedDiscriminator)) {
                                     try {
-                                        const hexData = '0x' + logBuffer.toString('hex')
                                         const predictedEvent = trepa.events.PoolPredictedEvent.decode({msg: hexData})
                                         
-                                        const trepaEvent = new TrepaEvent({
-                                            id: log.getTransaction()?.signatures[0] || 'unknown',
-                                            transactionSignature: log.getTransaction()?.signatures[0] || 'unknown',
-                                            timestamp: new Date(block.header.timestamp * 1000),
+                                        const predictedEventEntity = new PredictedEvent({
+                                            id: txSignature,
+                                            transactionSignature: txSignature,
+                                            timestamp: timestamp,
                                             poolAccount: predictedEvent.poolAccount,
                                             predictor: predictedEvent.predictor,
                                             poolTokenAccount: predictedEvent.poolTokenAccount,
@@ -85,17 +93,108 @@ async function startIndexer() {
                                             feePayer: predictedEvent.feePayer
                                         })
                                     
-                                        await ctx.store.insert(trepaEvent)
+                                        await ctx.store.insert(predictedEventEntity)
                                     
                                         console.log('PoolPredictedEvent saved:', {
                                             poolAccount: predictedEvent.poolAccount,
                                             predictor: predictedEvent.predictor,
                                             stake: predictedEvent.stake.toString(),
-                                            timestamp: new Date(block.header.timestamp * 1000),
-                                            tx: log.getTransaction()?.signatures[0] || 'unknown'
+                                            timestamp: timestamp,
+                                            tx: txSignature
                                         })
                                     } catch (error) {
                                         console.error('Failed to decode PoolPredictedEvent:', error)
+                                    }
+                                }
+
+                                // PoolClaimedEvent
+                                const poolClaimedDiscriminator = Buffer.from(trepa.events.PoolClaimedEvent.d8.slice(2), 'hex')
+                                if (discriminator.equals(poolClaimedDiscriminator)) {
+                                    try {
+                                        const claimedEvent = trepa.events.PoolClaimedEvent.decode({msg: hexData})
+                                        
+                                        const claimedEventEntity = new ClaimedEvent({
+                                            id: txSignature,
+                                            transactionSignature: txSignature,
+                                            timestamp: timestamp,
+                                            poolAccount: claimedEvent.poolAccount,
+                                            predictor: claimedEvent.predictor,
+                                            poolTokenAccount: claimedEvent.poolTokenAccount,
+                                            predictionAccount: claimedEvent.predictionAccount,
+                                            amount: claimedEvent.amount.toString(),
+                                            proof: JSON.stringify(claimedEvent.proof)
+                                        })
+                                    
+                                        await ctx.store.insert(claimedEventEntity)
+                                    
+                                        console.log('PoolClaimedEvent saved:', {
+                                            poolAccount: claimedEvent.poolAccount,
+                                            predictor: claimedEvent.predictor,
+                                            amount: claimedEvent.amount.toString(),
+                                            timestamp: timestamp,
+                                            tx: txSignature
+                                        })
+                                    } catch (error) {
+                                        console.error('Failed to decode PoolClaimedEvent:', error)
+                                    }
+                                }
+
+                                // PoolCreatedEvent
+                                const poolCreatedDiscriminator = Buffer.from(trepa.events.PoolCreatedEvent.d8.slice(2), 'hex')
+                                if (discriminator.equals(poolCreatedDiscriminator)) {
+                                    try {
+                                        const createdEvent = trepa.events.PoolCreatedEvent.decode({msg: hexData})
+                                        
+                                        const createdEventEntity = new PoolCreatedEvent({
+                                            id: txSignature,
+                                            transactionSignature: txSignature,
+                                            timestamp: timestamp,
+                                            poolAccount: createdEvent.poolAccount,
+                                            questionId: Buffer.from(createdEvent.questionId).toString('hex'),
+                                            predictionEndTime: createdEvent.predictionEndTime.toString(),
+                                            bump: createdEvent.bump.toString()
+                                        })
+                                    
+                                        await ctx.store.insert(createdEventEntity)
+                                    
+                                        console.log('PoolCreatedEvent saved:', {
+                                            poolAccount: createdEvent.poolAccount,
+                                            questionId: Buffer.from(createdEvent.questionId).toString('hex'),
+                                            predictionEndTime: createdEvent.predictionEndTime.toString(),
+                                            timestamp: timestamp,
+                                            tx: txSignature
+                                        })
+                                    } catch (error) {
+                                        console.error('Failed to decode PoolCreatedEvent:', error)
+                                    }
+                                }
+
+                                // PoolFinalizedEvent
+                                const poolFinalizedDiscriminator = Buffer.from(trepa.events.PoolFinalizedEvent.d8.slice(2), 'hex')
+                                if (discriminator.equals(poolFinalizedDiscriminator)) {
+                                    try {
+                                        const finalizedEvent = trepa.events.PoolFinalizedEvent.decode({msg: hexData})
+                                        
+                                        const finalizedEventEntity = new PoolFinalizedEvent({
+                                            id: txSignature,
+                                            transactionSignature: txSignature,
+                                            timestamp: timestamp,
+                                            poolAccount: finalizedEvent.poolAccount,
+                                            merkleRoot: Buffer.from(finalizedEvent.merkleRoot).toString('hex'),
+                                            protocolFee: finalizedEvent.protocolFee.toString()
+                                        })
+                                    
+                                        await ctx.store.insert(finalizedEventEntity)
+                                    
+                                        console.log('PoolFinalizedEvent saved:', {
+                                            poolAccount: finalizedEvent.poolAccount,
+                                            merkleRoot: Buffer.from(finalizedEvent.merkleRoot).toString('hex'),
+                                            protocolFee: finalizedEvent.protocolFee.toString(),
+                                            timestamp: timestamp,
+                                            tx: txSignature
+                                        })
+                                    } catch (error) {
+                                        console.error('Failed to decode PoolFinalizedEvent:', error)
                                     }
                                 }
                             }
