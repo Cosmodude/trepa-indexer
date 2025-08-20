@@ -4,7 +4,11 @@
   "private": true,
   "scripts": {
     "build": "rm -rf lib && tsc",
-    "start": "ts-node src/main.ts"
+    "start": "node -r dotenv/config lib/main.js",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "migrate": "npx squid-typeorm-migration apply"
+  
   },
   "dependencies": {
     "@subsquid/batch-processor": "^0.0.0",

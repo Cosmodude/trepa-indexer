@@ -12,6 +12,8 @@ import {
 } from "./model"
 import {config} from './config'
 
+const START_BLOCK_HEIGHT = 390_296_089
+
 const dataSource = new DataSourceBuilder()
     //.setGateway('https://v2.archive.subsquid.io/network/solana-mainnet')
     .setRpc({
@@ -19,9 +21,9 @@ const dataSource = new DataSourceBuilder()
             url: config.solana.rpcUrl,
             rateLimit: 25
         }),
-        strideConcurrency: 2
+        strideConcurrency: 8
     })
-    .setBlockRange({from: 389_273_353})
+    .setBlockRange({from: START_BLOCK_HEIGHT})
     .setFields({
         block: {
             timestamp: true
@@ -59,7 +61,7 @@ async function startIndexer() {
         clearTimeout(timeout)
         let blocks = ctx.blocks.map(augmentBlock)
         
-        console.log(`Processing ${blocks.length} blocks, total logs: ${blocks.reduce((sum, b) => sum + b.logs.length, 0)}`)
+        console.log(`Processing ${blocks.length} blocks (at block height${blocks[0].header.height}), total logs: ${blocks.reduce((sum, b) => sum + b.logs.length, 0)}`)
         
         for (let block of blocks) {
             for (let log of block.logs) {
