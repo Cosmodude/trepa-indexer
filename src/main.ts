@@ -12,7 +12,7 @@ import {
 } from "./model"
 import {config} from './config'
 
-const START_BLOCK_HEIGHT = 390_307_360
+const START_BLOCK_HEIGHT = 390_307_340
 
 const dataSource = new DataSourceBuilder()
     //.setGateway('https://v2.archive.subsquid.io/network/solana-mainnet')
@@ -44,9 +44,6 @@ const dataSource = new DataSourceBuilder()
         where: {
             programId: [trepa.programId]
         },
-        include: {
-            transaction: true
-        }
     })
     .build()
 

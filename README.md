@@ -68,3 +68,7 @@ Meanwhile, [abi](./src/abi) module gives an example of how that might look like.
 Solana support is in beta. 
 
 In particular, we expect to make Subsquid Network data ingestion at least 50 times faster.
+
+```
+curl --request POST --url https://api.devnet.solana.com --header 'accept: application/json' --header 'content-type: application/json' --data '{"id": 1, "jsonrpc": "2.0", "method": "getBlock", "params": [402354762, {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0}]}' | jq | grep blockHeight
+```
