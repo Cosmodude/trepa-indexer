@@ -1,8 +1,8 @@
 import {DateTimeColumn, Entity, StringColumn, PrimaryColumn} from '@subsquid/typeorm-store'
 
 @Entity()
-export class TrepaEvent {
-    constructor(props?: Partial<TrepaEvent>) {
+export class PredictedEvent {
+    constructor(props?: Partial<PredictedEvent>) {
         Object.assign(this, props)
     }
 
