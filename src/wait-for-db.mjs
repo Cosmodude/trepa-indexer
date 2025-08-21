@@ -5,9 +5,9 @@ dotenv.config();
 
 const { Client } = pg;
 
-const url = process.env.DATABASE_URL;
+const url = process.env.DB_URL;
 if (!url) { 
-  console.error("DATABASE_URL is not set"); 
+  console.error("DB_URL is not set"); 
   process.exit(1); 
 }
 
