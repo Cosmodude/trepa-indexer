@@ -12,7 +12,7 @@ import {
 } from "./model"
 import {config} from './config'
 
-const START_BLOCK_HEIGHT = 390_307_340
+const START_BLOCK_HEIGHT = 390_557_321
 
 const dataSource = new DataSourceBuilder()
     //.setGateway('https://v2.archive.subsquid.io/network/solana-mainnet')
