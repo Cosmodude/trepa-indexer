@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "rm -rf lib && tsc",
-    "prestart": "node src/wait-for-db.ts && npm run migrate",
+    "prestart": "node src/wait-for-db.mjs && npm run migrate",
     "start": "node -r dotenv/config lib/main.js",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
