@@ -12,7 +12,7 @@ import {
 } from "./model"
 import {config} from './config'
 
-const START_BLOCK_HEIGHT = 390_557_321
+const START_BLOCK_HEIGHT = 391_337_790
 
 const dataSource = new DataSourceBuilder()
     //.setGateway('https://v2.archive.subsquid.io/network/solana-mainnet')
@@ -44,6 +44,9 @@ const dataSource = new DataSourceBuilder()
         where: {
             programId: [trepa.programId]
         },
+        include: {
+            transaction: true,
+        }
     })
     .build()
 
@@ -71,7 +74,16 @@ async function startIndexer() {
             for (let block of blocks) {
                 for (let log of block.logs) {
                     if (log.programId === trepa.programId) {
-                        const transaction = log.getTransaction()
+                        // Check if transaction exists before processing
+                        let transaction
+                        try {
+                            transaction = log.getTransaction()
+                        } catch (error) {
+                            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+                            console.log('Skipping log - no transaction found:', errorMessage)
+                            continue
+                        }
+                        
                         if (!transaction) {
                             console.log('Skipping log - no transaction found')
                             continue
@@ -94,7 +106,7 @@ async function startIndexer() {
                                 if (logBuffer.length >= 8) {
                                     const discriminator = logBuffer.subarray(0, 8)
                                     const hexData = '0x' + logBuffer.toString('hex')
-                                    const txSignature = log.getTransaction()?.signatures[0] || 'unknown'
+                                    const txSignature = transaction?.signatures[0] || 'unknown'
                                     const timestamp = new Date(block.header.timestamp * 1000)
                                     
                                     console.log('Log discriminator:', discriminator.toString('hex'))
