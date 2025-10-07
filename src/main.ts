@@ -53,7 +53,7 @@ const dataSource = new DataSourceBuilder()
 console.log('Data source configuration:')
 console.log('- RPC URL:', config.solana.rpcUrl)
 console.log('- Program ID filter:', trepa.programId)
-console.log('- Note: Transactions that call router/executor programs (not direct calls) will be ignored')
+console.log('- Note: Processing all logs from the Trepa program, including router/executor calls')
 
 async function startIndexer() {
     console.log('Starting indexer with timeout...')
@@ -74,7 +74,6 @@ async function startIndexer() {
             for (let block of blocks) {
                 for (let log of block.logs) {
                     if (log.programId === trepa.programId) {
-                        // Check if transaction exists before processing
                         let transaction
                         try {
                             transaction = log.getTransaction()
