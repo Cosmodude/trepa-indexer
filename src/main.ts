@@ -1,6 +1,6 @@
 import {run} from '@subsquid/batch-processor'
 import {augmentBlock} from '@subsquid/solana-objects'
-import {DataSourceBuilder, SolanaRpcClient} from '@subsquid/solana-stream'
+import {DataSourceBuilder} from '@subsquid/solana-stream'
 import {TypeormDatabase} from '@subsquid/typeorm-store'
 import * as trepa from './abi/trepa'
 
@@ -10,18 +10,16 @@ import {
     PoolCreatedEvent, 
     PoolFinalizedEvent 
 } from "./model"
-import {config} from './config'
 
 const START_BLOCK_HEIGHT = 399_335_925
+const PORTAL_URL = 'https://portal.sqd.dev/datasets/solana-devnet'
 
 const dataSource = new DataSourceBuilder()
-    //.setGateway('https://v2.archive.subsquid.io/network/solana-mainnet')
-    .setRpc({
-        client: new SolanaRpcClient({
-            url: config.solana.rpcUrl,
-            rateLimit: 25
-        }),
-        strideConcurrency: 8
+    .setPortal({
+        url:    PORTAL_URL,
+        http: {
+            retryAttempts: Infinity
+        }
     })
     .setBlockRange({from: START_BLOCK_HEIGHT})
     .setFields({
@@ -51,9 +49,9 @@ const dataSource = new DataSourceBuilder()
     .build()
 
 console.log('Data source configuration:')
-console.log('- RPC URL:', config.solana.rpcUrl)
+console.log('- Portal URL: ', PORTAL_URL)
 console.log('- Program ID filter:', trepa.programId)
-console.log('- Note: Processing all logs from the Trepa program, including router/executor calls')
+console.log('- Note: Processing all logs from the Trepa program via Portal API')
 
 async function startIndexer() {
     console.log('Starting indexer with timeout...')
@@ -69,7 +67,7 @@ async function startIndexer() {
         try {
             let blocks = ctx.blocks.map(augmentBlock)
             
-            console.log(`Processing ${blocks.length} blocks (at block height ${blocks[0]?.header.height || 'unknown'}), total logs: ${blocks.reduce((sum, b) => sum + b.logs.length, 0)}`)
+            console.log(`Processing ${blocks.length} blocks (at block height ${blocks[0]?.header.number || 'unknown'}), total logs: ${blocks.reduce((sum, b) => sum + b.logs.length, 0)}`)
             
             for (let block of blocks) {
                 for (let log of block.logs) {
