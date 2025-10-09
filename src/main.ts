@@ -1,3 +1,6 @@
+import { config as dotenvConfig } from 'dotenv'
+dotenvConfig()
+
 import {run} from '@subsquid/batch-processor'
 import {augmentBlock} from '@subsquid/solana-objects'
 import {DataSourceBuilder} from '@subsquid/solana-stream'
@@ -27,15 +30,12 @@ const dataSource = new DataSourceBuilder()
             timestamp: true
         },
         transaction: {
-            signatures: true,
-            success: true,
-            instructions: {
-                programId: true
-            }
+            signatures: true
         },
         log: {
             programId: true,
-            data: true
+            message: true,
+            kind: true
         }
     })
     .addLog({
@@ -43,7 +43,7 @@ const dataSource = new DataSourceBuilder()
             programId: [trepa.programId]
         },
         include: {
-            transaction: true,
+            transaction: true
         }
     })
     .build()
@@ -61,13 +61,21 @@ async function startIndexer() {
         process.exit(0)
     }, 30_000)
     
-    await run(dataSource, new TypeormDatabase(), async ctx => {
+    const db = new TypeormDatabase()
+    
+    await run(dataSource, db, async ctx => {
         clearTimeout(timeout)
         
         try {
             let blocks = ctx.blocks.map(augmentBlock)
             
             console.log(`Processing ${blocks.length} blocks (at block height ${blocks[0]?.header.number || 'unknown'}), total logs: ${blocks.reduce((sum, b) => sum + b.logs.length, 0)}`)
+            
+            // Collect all events first, then insert them all at once (like the example)
+            const predictedEvents: PredictedEvent[] = []
+            const claimedEvents: ClaimedEvent[] = []
+            const createdEvents: PoolCreatedEvent[] = []
+            const finalizedEvents: PoolFinalizedEvent[] = []
             
             for (let block of blocks) {
                 for (let log of block.logs) {
@@ -86,16 +94,10 @@ async function startIndexer() {
                             continue
                         }
                         
-                        // Note: We're processing all logs from our program, even if called indirectly
-                        // This allows us to capture events from router/executor calls
+                        const txSignature = transaction?.signatures[0] || 'unknown'
                         
                         try {
-                            const logData = (log as any).data || (log as any).message
-                            console.log('Processing log:', {
-                                hasData: !!logData,
-                                kind: (log as any).kind,
-                                dataLength: logData ? logData.length : 0
-                            })
+                            const logData = (log as any).message
                             
                             if (logData && (log as any).kind === 'data') {
                                 const logBuffer = Buffer.from(logData, 'base64')
@@ -103,11 +105,8 @@ async function startIndexer() {
                                 if (logBuffer.length >= 8) {
                                     const discriminator = logBuffer.subarray(0, 8)
                                     const hexData = '0x' + logBuffer.toString('hex')
-                                    const txSignature = transaction?.signatures[0] || 'unknown'
                                     const timestamp = new Date(block.header.timestamp * 1000)
                                     
-                                    console.log('Log discriminator:', discriminator.toString('hex'))
-
                                     // PoolPredictedEvent
                                     const predictedDiscriminator = Buffer.from(trepa.events.PoolPredictedEvent.d8.slice(2), 'hex')
                                     if (discriminator.equals(predictedDiscriminator)) {
@@ -126,15 +125,7 @@ async function startIndexer() {
                                                 feePayer: predictedEvent.feePayer
                                             })
                                         
-                                            await ctx.store.insert(predictedEventEntity)
-                                        
-                                            console.log('PoolPredictedEvent saved:', {
-                                                poolAccount: predictedEvent.poolAccount,
-                                                predictor: predictedEvent.predictor,
-                                                stake: predictedEvent.stake.toString(),
-                                                timestamp: timestamp,
-                                                tx: txSignature
-                                            })
+                                            predictedEvents.push(predictedEventEntity)
                                         } catch (error) {
                                             console.error('Failed to decode PoolPredictedEvent:', error)
                                         }
@@ -158,15 +149,7 @@ async function startIndexer() {
                                                 proof: JSON.stringify(claimedEvent.proof)
                                             })
                                         
-                                            await ctx.store.insert(claimedEventEntity)
-                                        
-                                            console.log('PoolClaimedEvent saved:', {
-                                                poolAccount: claimedEvent.poolAccount,
-                                                predictor: claimedEvent.predictor,
-                                                amount: claimedEvent.amount.toString(),
-                                                timestamp: timestamp,
-                                                tx: txSignature
-                                            })
+                                            claimedEvents.push(claimedEventEntity)
                                         } catch (error) {
                                             console.error('Failed to decode PoolClaimedEvent:', error)
                                         }
@@ -188,15 +171,7 @@ async function startIndexer() {
                                                 bump: createdEvent.bump.toString()
                                             })
                                         
-                                            await ctx.store.insert(createdEventEntity)
-                                        
-                                            console.log('PoolCreatedEvent saved:', {
-                                                poolAccount: createdEvent.poolAccount,
-                                                questionId: Buffer.from(createdEvent.questionId).toString('hex'),
-                                                predictionEndTime: createdEvent.predictionEndTime.toString(),
-                                                timestamp: timestamp,
-                                                tx: txSignature
-                                            })
+                                            createdEvents.push(createdEventEntity)
                                         } catch (error) {
                                             console.error('Failed to decode PoolCreatedEvent:', error)
                                         }
@@ -217,15 +192,7 @@ async function startIndexer() {
                                                 protocolFee: finalizedEvent.protocolFee.toString()
                                             })
                                         
-                                            await ctx.store.insert(finalizedEventEntity)
-                                        
-                                            console.log('PoolFinalizedEvent saved:', {
-                                                poolAccount: finalizedEvent.poolAccount,
-                                                merkleRoot: Buffer.from(finalizedEvent.merkleRoot).toString('hex'),
-                                                protocolFee: finalizedEvent.protocolFee.toString(),
-                                                timestamp: timestamp,
-                                                tx: txSignature
-                                            })
+                                            finalizedEvents.push(finalizedEventEntity)
                                         } catch (error) {
                                             console.error('Failed to decode PoolFinalizedEvent:', error)
                                         }
@@ -237,6 +204,27 @@ async function startIndexer() {
                         }
                     }
                 }
+            }
+            
+            // Insert all events at once (like the example)
+            if (predictedEvents.length > 0) {
+                await ctx.store.insert(predictedEvents)
+                console.log(`Inserted ${predictedEvents.length} PoolPredictedEvents`)
+            }
+            
+            if (claimedEvents.length > 0) {
+                await ctx.store.insert(claimedEvents)
+                console.log(`Inserted ${claimedEvents.length} PoolClaimedEvents`)
+            }
+            
+            if (createdEvents.length > 0) {
+                await ctx.store.insert(createdEvents)
+                console.log(`Inserted ${createdEvents.length} PoolCreatedEvents`)
+            }
+            
+            if (finalizedEvents.length > 0) {
+                await ctx.store.insert(finalizedEvents)
+                console.log(`Inserted ${finalizedEvents.length} PoolFinalizedEvents`)
             }
         } catch (error) {
             console.error('Failed to process blocks:', error)
