@@ -1,4 +1,4 @@
-import {struct, u64, array, fixedArray, u8, i64, address} from '@subsquid/borsh'
+import {address, array, fixedArray, i64, struct, u64, u8} from '@subsquid/borsh'
 import {instruction} from '../abi.support'
 
 /**

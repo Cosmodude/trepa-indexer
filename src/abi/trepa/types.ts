@@ -1,4 +1,4 @@
-import {Codec, struct, address, u64, u8, fixedArray, i64, bool, array} from '@subsquid/borsh'
+import {Codec, address, array, bool, fixedArray, i64, struct, u64, u8} from '@subsquid/borsh'
 
 export interface ConfigAccount {
     admin: string

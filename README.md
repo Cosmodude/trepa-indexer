@@ -1,6 +1,30 @@
-# solana-example
+### Based on solana-example repo https://github.com/subsquid-labs/solana-example
 
-This project shows how one can index Orca Exchange USDC-SOL swaps using Subsquid SDK.
+## Getting started
+
+### Run indexer
+
+```bash
+# Install dependencies and build
+npm install
+npm run build
+
+# Apply database migrations to create the target schema
+node src/wait-for-db.mjs && npm run migrate
+
+# Run indexer
+npm run start
+
+# Generate ABI from IDL
+npx squid-solana-typegen src/abi src/abi/trepa/trepa.json
+
+# Get blockheight by slot number use:
+curl --request POST --url https://api.devnet.solana.com --header 'accept: application/json' --header 'content-type: application/json' --data '{"id": 1, "jsonrpc": "2.0", "method": "getBlock", "params": [402354762, {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0}]}' | jq | grep blockHeight
+```
+
+For further details, please check [main.ts](./src/main.ts). 
+
+For even more details, see [Solana Indexing Docs](https://docs.subsquid.io/solana-indexing/)
 
 ## About SDK
 
@@ -20,40 +44,6 @@ The latter is a key point, as Subsquid Network is a decentralized data lake and 
 that allows to granularly select and stream subset of block data to lightweight clients 
 while providing game changing performance over traditional RPC API.
 
-## Getting started
-
-### Prerequisites
-
-* Node.js (version 20.x and above)
-* Docker
-
-### Run indexer
-
-```bash
-# Install dependencies
-npm i
-
-# Compile the project
-npx tsc
-
-# Launch Postgres database to store the data
-docker compose up -d
-
-# Apply database migrations to create the target schema
-npx squid-typeorm-migration apply
-
-# Run indexer
-node -r dotenv/config lib/main.js
-
-# Checkout indexed swaps
-docker exec "$(basename "$(pwd)")-db-1" psql -U postgres \
-  -c "SELECT slot, from_token, to_token, from_amount, to_amount FROM exchange ORDER BY id LIMIT 10"
-```
-
-For further details, please consult heavily commented [main.ts](./src/main.ts). 
-
-For even more details, see [Solana Indexing Docs](https://docs.subsquid.io/solana-indexing/)
-
 ## Decoding binary data
 
 `@subsquid/borsh` package allows to easily define fast and type-safe codec for any Solana data structure.
@@ -61,14 +51,8 @@ For even more details, see [Solana Indexing Docs](https://docs.subsquid.io/solan
 In the future we plan to develop robust code generation tools, 
 that would allow to create all relevant definitions from IDL files automatically.
 
-Meanwhile, [abi](./src/abi) module gives an example of how that might look like.
-
 ## Disclaimer
 
 Solana support is in beta. 
 
 In particular, we expect to make Subsquid Network data ingestion at least 50 times faster.
-
-```
-curl --request POST --url https://api.devnet.solana.com --header 'accept: application/json' --header 'content-type: application/json' --data '{"id": 1, "jsonrpc": "2.0", "method": "getBlock", "params": [402354762, {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0}]}' | jq | grep blockHeight
-```
