@@ -89,11 +89,6 @@ async function startIndexer() {
                             continue
                         }
                         
-                        if (!transaction) {
-                            console.log('Skipping log - no transaction found')
-                            continue
-                        }
-                        
                         const txSignature = transaction?.signatures[0] || 'unknown'
                         
                         try {

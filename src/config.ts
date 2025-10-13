@@ -2,6 +2,20 @@ import { config as dotenvConfig } from 'dotenv'
 
 dotenvConfig()
 
+const DEBUG_MODE = process.env.NODE_ENV === 'development'
+
+function maskUrl(url: string | undefined): string {
+  if (!url) return 'undefined'
+  
+  try {
+    const urlObj = new URL(url)
+    const maskedHost = urlObj.hostname.replace(/(.{2}).*(.{2})/, '$1***$2')
+    return `${urlObj.protocol}//${maskedHost}${urlObj.pathname}${urlObj.search ? '?***' : ''}`
+  } catch {
+    return '***masked***'
+  }
+}
+
 export const config = {
   database: {
     url: process.env.DB_URL,
@@ -11,5 +25,8 @@ export const config = {
   },
   environment: process.env.NODE_ENV || 'development',
 }
- console.log('DB URL:', config.database.url)
- console.log('RPC URL:', config.solana.rpcUrl)
+
+if (DEBUG_MODE) {
+  console.log('DB URL:', maskUrl(config.database.url))
+  console.log('RPC URL:', maskUrl(config.solana.rpcUrl))
+}
