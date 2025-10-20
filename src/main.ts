@@ -4,15 +4,15 @@ dotenvConfig()
 import {run} from '@subsquid/batch-processor'
 import {augmentBlock} from '@subsquid/solana-objects'
 import {DataSourceBuilder} from '@subsquid/solana-stream'
-import {TypeormDatabase} from '@subsquid/typeorm-store'
 import * as trepa from './abi/trepa'
+import { DrizzleDatabase } from './drizzle/database'
 
 import { 
-    PredictedEvent, 
-    ClaimedEvent, 
-    PoolCreatedEvent, 
-    PoolFinalizedEvent 
-} from "./model"
+    type NewPredictedEvent,
+    type NewClaimedEvent, 
+    type NewPoolCreatedEvent, 
+    type NewPoolFinalizedEvent 
+} from "./drizzle/schema"
 
 const START_BLOCK_HEIGHT = 399_335_925
 const PORTAL_URL = 'https://portal.sqd.dev/datasets/solana-devnet'
@@ -61,9 +61,9 @@ async function startIndexer() {
         process.exit(0)
     }, 30_000)
     
-    const db = new TypeormDatabase()
+    const db = new DrizzleDatabase()
     
-    await run(dataSource, db, async ctx => {
+    await run(dataSource, db as any, async ctx => {
         clearTimeout(timeout)
         
         try {
@@ -72,10 +72,10 @@ async function startIndexer() {
             console.log(`Processing ${blocks.length} blocks (at block height ${blocks[0]?.header.number || 'unknown'}), total logs: ${blocks.reduce((sum, b) => sum + b.logs.length, 0)}`)
             
             // Collect all events first, then insert them all at once (like the example)
-            const predictedEvents: PredictedEvent[] = []
-            const claimedEvents: ClaimedEvent[] = []
-            const createdEvents: PoolCreatedEvent[] = []
-            const finalizedEvents: PoolFinalizedEvent[] = []
+            const predictedEvents: NewPredictedEvent[] = []
+            const claimedEvents: NewClaimedEvent[] = []
+            const createdEvents: NewPoolCreatedEvent[] = []
+            const finalizedEvents: NewPoolFinalizedEvent[] = []
             
             for (let block of blocks) {
                 for (let log of block.logs) {
@@ -108,7 +108,7 @@ async function startIndexer() {
                                         try {
                                             const predictedEvent = trepa.events.PoolPredictedEvent.decode({msg: hexData})
                                             
-                                            const predictedEventEntity = new PredictedEvent({
+                                            const predictedEventEntity: NewPredictedEvent = {
                                                 id: txSignature,
                                                 transactionSignature: txSignature,
                                                 timestamp: timestamp,
@@ -118,7 +118,7 @@ async function startIndexer() {
                                                 predictionAccount: predictedEvent.predictionAccount,
                                                 stake: predictedEvent.stake.toString(),
                                                 feePayer: predictedEvent.feePayer
-                                            })
+                                            }
                                         
                                             predictedEvents.push(predictedEventEntity)
                                         } catch (error) {
@@ -132,7 +132,7 @@ async function startIndexer() {
                                         try {
                                             const claimedEvent = trepa.events.PoolClaimedEvent.decode({msg: hexData})
                                             
-                                            const claimedEventEntity = new ClaimedEvent({
+                                            const claimedEventEntity: NewClaimedEvent = {
                                                 id: txSignature,
                                                 transactionSignature: txSignature,
                                                 timestamp: timestamp,
@@ -142,7 +142,7 @@ async function startIndexer() {
                                                 predictionAccount: claimedEvent.predictionAccount,
                                                 amount: claimedEvent.amount.toString(),
                                                 proof: JSON.stringify(claimedEvent.proof)
-                                            })
+                                            }
                                         
                                             claimedEvents.push(claimedEventEntity)
                                         } catch (error) {
@@ -156,7 +156,7 @@ async function startIndexer() {
                                         try {
                                             const createdEvent = trepa.events.PoolCreatedEvent.decode({msg: hexData})
                                             
-                                            const createdEventEntity = new PoolCreatedEvent({
+                                            const createdEventEntity: NewPoolCreatedEvent = {
                                                 id: txSignature,
                                                 transactionSignature: txSignature,
                                                 timestamp: timestamp,
@@ -164,7 +164,7 @@ async function startIndexer() {
                                                 questionId: Buffer.from(createdEvent.questionId).toString('hex'),
                                                 predictionEndTime: createdEvent.predictionEndTime.toString(),
                                                 bump: createdEvent.bump.toString()
-                                            })
+                                            }
                                         
                                             createdEvents.push(createdEventEntity)
                                         } catch (error) {
@@ -178,14 +178,14 @@ async function startIndexer() {
                                         try {
                                             const finalizedEvent = trepa.events.PoolFinalizedEvent.decode({msg: hexData})
                                             
-                                            const finalizedEventEntity = new PoolFinalizedEvent({
+                                            const finalizedEventEntity: NewPoolFinalizedEvent = {
                                                 id: txSignature,
                                                 transactionSignature: txSignature,
                                                 timestamp: timestamp,
                                                 poolAccount: finalizedEvent.poolAccount,
                                                 merkleRoot: Buffer.from(finalizedEvent.merkleRoot).toString('hex'),
                                                 protocolFee: finalizedEvent.protocolFee.toString()
-                                            })
+                                            }
                                         
                                             finalizedEvents.push(finalizedEventEntity)
                                         } catch (error) {
@@ -202,24 +202,10 @@ async function startIndexer() {
             }
             
             // Insert all events at once (like the example)
-            if (predictedEvents.length > 0) {
-                await ctx.store.insert(predictedEvents)
-                console.log(`Inserted ${predictedEvents.length} PoolPredictedEvents`)
-            }
-            
-            if (claimedEvents.length > 0) {
-                await ctx.store.insert(claimedEvents)
-                console.log(`Inserted ${claimedEvents.length} PoolClaimedEvents`)
-            }
-            
-            if (createdEvents.length > 0) {
-                await ctx.store.insert(createdEvents)
-                console.log(`Inserted ${createdEvents.length} PoolCreatedEvents`)
-            }
-            
-            if (finalizedEvents.length > 0) {
-                await ctx.store.insert(finalizedEvents)
-                console.log(`Inserted ${finalizedEvents.length} PoolFinalizedEvents`)
+            const allEvents = [...predictedEvents, ...claimedEvents, ...createdEvents, ...finalizedEvents]
+            if (allEvents.length > 0) {
+                await (ctx.store as any).insert(allEvents)
+                console.log(`Inserted ${allEvents.length} total events`)
             }
         } catch (error) {
             console.error('Failed to process blocks:', error)
