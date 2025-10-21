@@ -201,11 +201,11 @@ async function startIndexer() {
                 }
             }
             
-            // Insert all events at once (like the example)
+            // Upsert all events at once to handle duplicates gracefully
             const allEvents = [...predictedEvents, ...claimedEvents, ...createdEvents, ...finalizedEvents]
             if (allEvents.length > 0) {
-                await (ctx.store as any).insert(allEvents)
-                console.log(`Inserted ${allEvents.length} total events`)
+                await (ctx.store as any).upsert(allEvents)
+                console.log(`Upserted ${allEvents.length} total events`)
             }
         } catch (error) {
             console.error('Failed to process blocks:', error)
