@@ -11,7 +11,11 @@
     "migrate": "npx drizzle-kit push",
     "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",
-    "db:studio": "npx drizzle-kit studio"
+    "db:studio": "npx drizzle-kit studio",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "format:check": "prettier --check src/**/*.ts"
   },
   "dependencies": {
     "@subsquid/batch-processor": "1.0.0-portal-api.a3f844",
@@ -29,8 +33,15 @@
     "@subsquid/solana-typegen": "^0.6.1",
     "@types/node": "^24.7.0",
     "@types/pg": "^8.15.5",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "dotenv-cli": "^10.0.0",
     "drizzle-kit": "^0.31.5",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0",
     "typescript": "^5.9.3"
   }
 }
