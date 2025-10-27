@@ -1,14 +1,13 @@
-import { Database } from '@subsquid/batch-processor';
 import { db } from './db';
-import { 
-  predictedEvent, 
-  claimedEvent, 
-  poolCreatedEvent, 
+import {
+  predictedEvent,
+  claimedEvent,
+  poolCreatedEvent,
   poolFinalizedEvent,
   type NewPredictedEvent,
   type NewClaimedEvent,
   type NewPoolCreatedEvent,
-  type NewPoolFinalizedEvent
+  type NewPoolFinalizedEvent,
 } from './schema';
 
 export class DrizzleDatabase {
@@ -17,7 +16,7 @@ export class DrizzleDatabase {
     // This should match START_BLOCK_HEIGHT in main.ts
     return {
       height: 399_335_925,
-      hash: '0x0000000000000000000000000000000000000000000000000000000000000000'
+      hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     };
   }
 
@@ -80,25 +79,34 @@ export class DrizzleDatabase {
 
     // Use ON CONFLICT DO NOTHING for upsert behavior
     if (predictedEvents.length > 0) {
-      await db.insert(predictedEvent).values(predictedEvents).onConflictDoNothing();
+      await db
+        .insert(predictedEvent)
+        .values(predictedEvents)
+        .onConflictDoNothing();
     }
     if (claimedEvents.length > 0) {
       await db.insert(claimedEvent).values(claimedEvents).onConflictDoNothing();
     }
     if (createdEvents.length > 0) {
-      await db.insert(poolCreatedEvent).values(createdEvents).onConflictDoNothing();
+      await db
+        .insert(poolCreatedEvent)
+        .values(createdEvents)
+        .onConflictDoNothing();
     }
     if (finalizedEvents.length > 0) {
-      await db.insert(poolFinalizedEvent).values(finalizedEvents).onConflictDoNothing();
+      await db
+        .insert(poolFinalizedEvent)
+        .values(finalizedEvents)
+        .onConflictDoNothing();
     }
   }
 
-  async update(records: any[]): Promise<void> {
+  async update(_records: any[]): Promise<void> {
     // Implement update logic if needed
     throw new Error('Update not implemented yet');
   }
 
-  async delete(records: any[]): Promise<void> {
+  async delete(_records: any[]): Promise<void> {
     // Implement delete logic if needed
     throw new Error('Delete not implemented yet');
   }
