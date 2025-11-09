@@ -1,5 +1,5 @@
 {
-  "address": "DcExEjLK1TVcNxj1XfSBfAkuVAcPj5APnB5Si8STEPiY",
+  "address": "VadQQSAPzMvh4wYV2yxmbmv969ZaFEJRGT9M7p52Zwz",
   "metadata": {
     "name": "trepa",
     "version": "0.1.0",
@@ -7,6 +7,156 @@
     "description": "Created with Anchor"
   },
   "instructions": [
+    {
+      "name": "accept_creator_role",
+      "docs": [
+        "Creator accept the access"
+      ],
+      "discriminator": [
+        22,
+        161,
+        227,
+        253,
+        64,
+        245,
+        97,
+        56
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "accept_resolver_role",
+      "docs": [
+        "Resolver accept the access"
+      ],
+      "discriminator": [
+        146,
+        218,
+        107,
+        116,
+        61,
+        251,
+        72,
+        82
+      ],
+      "accounts": [
+        {
+          "name": "resolver",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
     {
       "name": "claim_rewards",
       "docs": [
@@ -24,13 +174,56 @@
       ],
       "accounts": [
         {
-          "name": "predictor",
+          "name": "signer",
+          "docs": [
+            "Either user or platform (creator) depending on the claim window"
+          ],
           "writable": true,
           "signer": true
         },
         {
-          "name": "prediction",
+          "name": "fee_payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "predictor",
           "writable": true
+        },
+        {
+          "name": "close_authority",
+          "writable": true
+        },
+        {
+          "name": "prediction",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  101,
+                  100,
+                  105,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "predictor"
+              }
+            ]
+          }
         },
         {
           "name": "pool",
@@ -42,17 +235,116 @@
         },
         {
           "name": "pool_token_account",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "stake_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
         },
         {
           "name": "stake_token_mint"
         },
         {
-          "name": "config"
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "token_program"
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -74,6 +366,287 @@
       ]
     },
     {
+      "name": "claim_streak_rewards",
+      "discriminator": [
+        248,
+        148,
+        13,
+        143,
+        18,
+        168,
+        161,
+        27
+      ],
+      "accounts": [
+        {
+          "name": "resolver",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "streak_accumulator",
+          "writable": true
+        },
+        {
+          "name": "streak_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "streak_accumulator"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "close_prediction_account",
+      "docs": [
+        "Close a prediction account and refund rent to the appropriate party"
+      ],
+      "discriminator": [
+        80,
+        144,
+        211,
+        187,
+        204,
+        52,
+        161,
+        95
+      ],
+      "accounts": [
+        {
+          "name": "fee_payer",
+          "docs": [
+            "Only pays for the transaction fees"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "predictor",
+          "docs": [
+            "CHECKs: the prediction account is derived using this key"
+          ],
+          "writable": true
+        },
+        {
+          "name": "close_authority",
+          "docs": [
+            "CHECKs: are done using the config account"
+          ],
+          "writable": true
+        },
+        {
+          "name": "prediction",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  101,
+                  100,
+                  105,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "predictor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "create_pool",
       "docs": [
         "Creates a new prediction pool"
@@ -90,7 +663,7 @@
       ],
       "accounts": [
         {
-          "name": "admin",
+          "name": "creator",
           "writable": true,
           "signer": true
         },
@@ -99,17 +672,66 @@
           "writable": true
         },
         {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "stake_token_mint"
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "clock",
-          "address": "SysvarC1ock11111111111111111111111111111111"
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
         {
-          "name": "question_id",
+          "name": "reference_id",
           "type": {
             "array": [
               "u8",
@@ -120,6 +742,41 @@
         {
           "name": "prediction_end_time",
           "type": "i64"
+        },
+        {
+          "name": "min_stake",
+          "type": "u64"
+        },
+        {
+          "name": "max_stake",
+          "type": "u64"
+        },
+        {
+          "name": "max_roi",
+          "type": "u64"
+        },
+        {
+          "name": "min_outcome",
+          "type": "i64"
+        },
+        {
+          "name": "max_outcome",
+          "type": "i64"
+        },
+        {
+          "name": "precision",
+          "type": "u8"
+        },
+        {
+          "name": "time_series_id",
+          "type": {
+            "option": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          }
         }
       ]
     },
@@ -140,7 +797,7 @@
       ],
       "accounts": [
         {
-          "name": "admin",
+          "name": "resolver",
           "writable": true,
           "signer": true
         },
@@ -150,24 +807,174 @@
         },
         {
           "name": "pool_token_account",
-          "docs": [
-            "CHECKs: are done inside of the logic of the program"
-          ],
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "stake_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
         },
         {
           "name": "treasury_token_account",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "config.treasury",
+                "account": "ConfigAccount"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "stake_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
         },
         {
-          "name": "config"
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "stake_token_mint"
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "token_program"
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -183,6 +990,10 @@
         {
           "name": "protocol_fee",
           "type": "u64"
+        },
+        {
+          "name": "claims",
+          "type": "u32"
         }
       ]
     },
@@ -229,21 +1040,41 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
-        {
-          "name": "min_stake",
-          "type": "u64"
-        },
-        {
-          "name": "max_stake",
-          "type": "u64"
-        },
-        {
-          "name": "max_roi",
-          "type": "u64"
-        },
         {
           "name": "platform_fee",
           "type": "u64"
@@ -253,8 +1084,16 @@
           "type": "pubkey"
         },
         {
-          "name": "stake_token_mint",
+          "name": "creator",
           "type": "pubkey"
+        },
+        {
+          "name": "resolver",
+          "type": "pubkey"
+        },
+        {
+          "name": "self_claim_window",
+          "type": "u64"
         }
       ]
     },
@@ -276,6 +1115,11 @@
       "accounts": [
         {
           "name": "predictor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "fee_payer",
           "writable": true,
           "signer": true
         },
@@ -320,39 +1164,396 @@
         },
         {
           "name": "pool_token_account",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "stake_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
         },
         {
-          "name": "config"
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "stake_token_mint"
+        },
+        {
+          "name": "token_program"
         },
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
         },
         {
-          "name": "fee_payer",
-          "writable": true,
-          "signer": true
+          "name": "program"
         }
       ],
       "args": [
         {
           "name": "stake",
           "type": "u64"
+        },
+        {
+          "name": "prediction",
+          "type": "i64"
         }
       ]
     },
     {
+      "name": "propose_update_access",
+      "docs": [
+        "Updates the creator and/or resolver"
+      ],
+      "discriminator": [
+        73,
+        143,
+        73,
+        250,
+        212,
+        136,
+        139,
+        40
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "creator",
+          "type": {
+            "option": "pubkey"
+          }
+        },
+        {
+          "name": "resolver",
+          "type": {
+            "option": "pubkey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "register_streak",
+      "docs": [
+        "Streak Accumulator Functions for Time Series"
+      ],
+      "discriminator": [
+        206,
+        182,
+        141,
+        62,
+        0,
+        173,
+        126,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "streak_accumulator",
+          "writable": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "time_series_id",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          }
+        },
+        {
+          "name": "fee_percentage",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "toggle_freeze_program",
+      "docs": [
+        "Toggle freeze/unfreeze the entire program"
+      ],
+      "discriminator": [
+        28,
+        75,
+        25,
+        110,
+        28,
+        154,
+        85,
+        128
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "update_config",
       "docs": [
-        "Updates the platform parameters"
+        "Updates the platform parameters like self claim window and treasury"
       ],
       "discriminator": [
         29,
@@ -388,28 +1589,437 @@
               }
             ]
           }
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
         {
-          "name": "min_stake",
-          "type": "u64"
-        },
-        {
-          "name": "max_stake",
-          "type": "u64"
-        },
-        {
-          "name": "max_roi",
-          "type": "u64"
-        },
-        {
-          "name": "platform_fee",
-          "type": "u64"
+          "name": "self_claim_window",
+          "type": {
+            "option": "u64"
+          }
         },
         {
           "name": "treasury",
-          "type": "pubkey"
+          "type": {
+            "option": "pubkey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_pool_status",
+      "docs": [
+        "Updates the pool status"
+      ],
+      "discriminator": [
+        130,
+        87,
+        108,
+        6,
+        46,
+        224,
+        117,
+        123
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "status",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "update_prediction",
+      "docs": [
+        "Updates the prediction for a pool"
+      ],
+      "discriminator": [
+        22,
+        85,
+        122,
+        238,
+        83,
+        45,
+        89,
+        26
+      ],
+      "accounts": [
+        {
+          "name": "predictor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "fee_payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "prediction",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  101,
+                  100,
+                  105,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "predictor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "prediction",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "update_stake",
+      "docs": [
+        "Updates the stake for a prediction"
+      ],
+      "discriminator": [
+        248,
+        112,
+        197,
+        95,
+        233,
+        137,
+        105,
+        19
+      ],
+      "accounts": [
+        {
+          "name": "predictor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "fee_payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "prediction",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  101,
+                  100,
+                  105,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "predictor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "predictor_token_account",
+          "writable": true
+        },
+        {
+          "name": "pool_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "stake_token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "stake_token_mint"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_stake",
+          "type": "u64"
         }
       ]
     }
@@ -453,72 +2063,215 @@
         41,
         117
       ]
+    },
+    {
+      "name": "StreakAccumulatorAccount",
+      "discriminator": [
+        114,
+        215,
+        220,
+        208,
+        121,
+        55,
+        191,
+        209
+      ]
     }
   ],
   "events": [
     {
-      "name": "ConfigUpdatedEvent",
+      "name": "CreatorRoleAcceptedEvent",
       "discriminator": [
-        245,
-        158,
-        129,
-        99,
-        60,
-        100,
-        214,
-        220
-      ]
-    },
-    {
-      "name": "PoolClaimedEvent",
-      "discriminator": [
-        232,
-        253,
-        232,
-        237,
-        15,
-        67,
-        115,
-        26
-      ]
-    },
-    {
-      "name": "PoolCreatedEvent",
-      "discriminator": [
+        57,
+        184,
+        171,
         25,
-        94,
-        75,
-        47,
-        112,
-        99,
-        53,
-        63
+        130,
+        223,
+        233,
+        128
       ]
     },
     {
-      "name": "PoolFinalizedEvent",
+      "name": "PlatformConfigUpdatedEvent",
       "discriminator": [
-        70,
-        145,
-        207,
-        189,
-        138,
-        172,
+        54,
+        249,
+        128,
+        134,
+        35,
+        251,
+        239,
+        212
+      ]
+    },
+    {
+      "name": "PoolStatusUpdatedEvent",
+      "discriminator": [
+        104,
+        48,
+        129,
         208,
-        194
+        229,
+        193,
+        19,
+        21
       ]
     },
     {
-      "name": "PoolPredictedEvent",
+      "name": "PredictionAccountClosedEvent",
       "discriminator": [
-        87,
-        156,
-        78,
-        86,
+        231,
+        89,
+        240,
+        148,
+        81,
+        116,
+        119,
+        110
+      ]
+    },
+    {
+      "name": "PredictionCreatedEvent",
+      "discriminator": [
+        140,
+        73,
+        219,
+        10,
+        178,
+        195,
+        131,
+        139
+      ]
+    },
+    {
+      "name": "PredictionPoolCreatedEvent",
+      "discriminator": [
+        59,
+        218,
+        205,
+        151,
+        254,
+        145,
+        134,
+        62
+      ]
+    },
+    {
+      "name": "PredictionPoolFinalizedEvent",
+      "discriminator": [
+        189,
+        28,
+        164,
+        66,
+        164,
+        117,
+        77,
+        126
+      ]
+    },
+    {
+      "name": "PredictionRewardsClaimedEvent",
+      "discriminator": [
+        189,
+        171,
+        149,
+        158,
+        133,
+        61,
+        247,
+        3
+      ]
+    },
+    {
+      "name": "PredictionStakeIncreasedEvent",
+      "discriminator": [
+        99,
+        147,
+        133,
+        216,
         72,
-        76,
-        255,
-        0
+        236,
+        209,
+        81
+      ]
+    },
+    {
+      "name": "PredictionValueUpdatedEvent",
+      "discriminator": [
+        54,
+        73,
+        125,
+        68,
+        206,
+        38,
+        116,
+        244
+      ]
+    },
+    {
+      "name": "ProgramStatusToggledEvent",
+      "discriminator": [
+        240,
+        83,
+        208,
+        81,
+        99,
+        39,
+        60,
+        187
+      ]
+    },
+    {
+      "name": "ProposeUpdateAccessEvent",
+      "discriminator": [
+        199,
+        49,
+        93,
+        18,
+        130,
+        218,
+        203,
+        28
+      ]
+    },
+    {
+      "name": "ResolverRoleAcceptedEvent",
+      "discriminator": [
+        43,
+        2,
+        137,
+        161,
+        9,
+        84,
+        80,
+        96
+      ]
+    },
+    {
+      "name": "StreakRegisteredEvent",
+      "discriminator": [
+        235,
+        46,
+        118,
+        188,
+        218,
+        253,
+        61,
+        19
+      ]
+    },
+    {
+      "name": "StreakRewardsClaimedEvent",
+      "discriminator": [
+        34,
+        133,
+        127,
+        177,
+        229,
+        41,
+        26,
+        72
       ]
     }
   ],
@@ -530,83 +2283,248 @@
     },
     {
       "code": 6001,
-      "name": "InsufficientFunds",
-      "msg": "Insufficient funds"
-    },
-    {
-      "code": 6002,
       "name": "PoolAlreadyFinalized",
       "msg": "Pool already finalized"
     },
     {
-      "code": 6003,
-      "name": "InvalidProof",
-      "msg": "Invalid proof"
-    },
-    {
-      "code": 6004,
-      "name": "InsufficientStake",
-      "msg": "Insufficient stake"
-    },
-    {
-      "code": 6005,
-      "name": "ExcessiveStake",
-      "msg": "Excessive stake"
-    },
-    {
-      "code": 6006,
-      "name": "InvalidTokenAccount",
-      "msg": "Invalid token account"
-    },
-    {
-      "code": 6007,
-      "name": "Unauthorized",
-      "msg": "Unauthorized admin action"
-    },
-    {
-      "code": 6008,
-      "name": "UnauthorizedClaim",
-      "msg": "Unauthorized claim"
-    },
-    {
-      "code": 6009,
-      "name": "InvalidMint",
-      "msg": "Invalid mint account"
-    },
-    {
-      "code": 6010,
-      "name": "InvalidTokenAccountOwner",
-      "msg": "Invalid pool token account owner"
-    },
-    {
-      "code": 6011,
+      "code": 6002,
       "name": "PoolNotFinalized",
       "msg": "Pool not finalized"
     },
     {
-      "code": 6012,
-      "name": "PoolTokenAccountDoesNotExist",
-      "msg": "Pool token account does not exist"
+      "code": 6003,
+      "name": "PredictionWindowClosed",
+      "msg": "Prediction window is closed"
     },
     {
-      "code": 6013,
+      "code": 6004,
+      "name": "IncorrectAdmin",
+      "msg": "Incorrect admin public key provided"
+    },
+    {
+      "code": 6005,
+      "name": "Unauthorized",
+      "msg": "Unauthorized admin action"
+    },
+    {
+      "code": 6006,
+      "name": "ProgramFrozen",
+      "msg": "Program is frozen"
+    },
+    {
+      "code": 6007,
+      "name": "PoolFrozen",
+      "msg": "Pool operations are frozen"
+    },
+    {
+      "code": 6008,
+      "name": "PredictionFrozen",
+      "msg": "Predictions are frozen for this pool"
+    },
+    {
+      "code": 6009,
+      "name": "ClaimsFrozen",
+      "msg": "Claims are frozen for this pool"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidMint",
+      "msg": "Invalid mint account"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidTokenAccountOwner",
+      "msg": "Invalid pool token account owner"
+    },
+    {
+      "code": 6012,
       "name": "InvalidStakeToken",
       "msg": "Invalid stake token mint"
     },
     {
+      "code": 6013,
+      "name": "InvalidTokenAccount",
+      "msg": "Invalid token account"
+    },
+    {
       "code": 6014,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds"
+    },
+    {
+      "code": 6015,
+      "name": "PoolTokenAccountDoesNotExist",
+      "msg": "Pool token account does not exist"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidTokenTransfer",
+      "msg": "Invalid token transfer occurred. The transferred amount does not match the expected amount."
+    },
+    {
+      "code": 6017,
+      "name": "InsufficientStake",
+      "msg": "Insufficient stake"
+    },
+    {
+      "code": 6018,
+      "name": "ExcessiveStake",
+      "msg": "Excessive stake"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidUpdateStake",
+      "msg": "Invalid update stake: new stake must be greater than or equal to current stake"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidStakeBounds",
+      "msg": "Invalid stake bounds: min_stake must be less than or equal to max_stake"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidFeePayer",
+      "msg": "To predict either user or platform must pay the fee"
+    },
+    {
+      "code": 6022,
+      "name": "InvalidPercentage",
+      "msg": "The percentage must be between 0 and BPS_IN_100_PERCENT (10000 = 100%) in basis points"
+    },
+    {
+      "code": 6023,
       "name": "InvalidEndTime",
       "msg": "Invalid pool end time"
     },
     {
-      "code": 6015,
+      "code": 6024,
+      "name": "InvalidOutcomeBounds",
+      "msg": "Invalid outcome bounds: min_outcome must be less than max_outcome"
+    },
+    {
+      "code": 6025,
+      "name": "InvalidMaxRoi",
+      "msg": "Invalid max ROI: must be greater than 0"
+    },
+    {
+      "code": 6026,
+      "name": "TokenExtensionNotSupported",
+      "msg": "The token extension is not supported"
+    },
+    {
+      "code": 6027,
+      "name": "PredictionOutOfBounds",
+      "msg": "Prediction is out of bounds or invalid"
+    },
+    {
+      "code": 6028,
       "name": "RewardsAlreadyClaimed",
       "msg": "Rewards already claimed"
     },
     {
-      "code": 6016,
-      "name": "InvalidPool",
-      "msg": "Invalid pool"
+      "code": 6029,
+      "name": "InvalidClaimCount",
+      "msg": "Invalid claims left value, it should be greater than zero"
+    },
+    {
+      "code": 6030,
+      "name": "ClaimsExhausted",
+      "msg": "All winners have already claimed their rewards"
+    },
+    {
+      "code": 6031,
+      "name": "ClaimsPending",
+      "msg": "Not all winners have claimed their rewards yet"
+    },
+    {
+      "code": 6032,
+      "name": "InvalidProof",
+      "msg": "Invalid proof"
+    },
+    {
+      "code": 6033,
+      "name": "ProofTooLong",
+      "msg": "Proof length should be less than or equal to 32"
+    },
+    {
+      "code": 6034,
+      "name": "ZeroClaimAmount",
+      "msg": "Claim amount must be greater than zero"
+    },
+    {
+      "code": 6035,
+      "name": "MaxRoiExceeded",
+      "msg": "Claim amount exceeds max ROI"
+    },
+    {
+      "code": 6036,
+      "name": "UnauthorizedClaim",
+      "msg": "Only predictor can sign for claiming rewards before the window ends."
+    },
+    {
+      "code": 6037,
+      "name": "UnauthorizedWindowClaim",
+      "msg": "Only predictor or platform can sign for claiming rewards after the window ends."
+    },
+    {
+      "code": 6038,
+      "name": "NoConfigUpdateProvided",
+      "msg": "No config update provided"
+    },
+    {
+      "code": 6039,
+      "name": "NoAccessUpdateProvided",
+      "msg": "No access update provided"
+    },
+    {
+      "code": 6040,
+      "name": "SameStatusProvided",
+      "msg": "Cannot switch to the same status"
+    },
+    {
+      "code": 6041,
+      "name": "InvalidPoolStatusValue",
+      "msg": "Invalid pool status value"
+    },
+    {
+      "code": 6042,
+      "name": "InvalidSelfClaimWindow",
+      "msg": "Invalid self claim window: must be greater than 0"
+    },
+    {
+      "code": 6043,
+      "name": "InvalidStreakAccumulator",
+      "msg": "The provided streak accumulator does not match the expected value"
+    },
+    {
+      "code": 6044,
+      "name": "UnexpectedStreakAccumulator",
+      "msg": "Unexpected streak accumulator for non-time-series pool. Pass time series id in arguments"
+    },
+    {
+      "code": 6045,
+      "name": "MissingStreakAccumulator",
+      "msg": "Missing streak accumulator for time-series pool. Pass the streak accumulator account as a remaining account"
+    },
+    {
+      "code": 6046,
+      "name": "InvalidStreakTokenAccount",
+      "msg": "Invalid streak token account for the streak accumulator"
+    },
+    {
+      "code": 6047,
+      "name": "IncorrectTokenProgramId",
+      "msg": "Invalid token program id"
+    },
+    {
+      "code": 6048,
+      "name": "InvalidAtaData",
+      "msg": "Invalid associated token account data"
+    },
+    {
+      "code": 6049,
+      "name": "ArithmeticError",
+      "msg": "Arithmetic operation overflow or underflow"
     }
   ],
   "types": [
@@ -617,41 +2535,129 @@
         "fields": [
           {
             "name": "admin",
+            "docs": [
+              "Admin authority"
+            ],
             "type": "pubkey"
           },
           {
-            "name": "min_stake",
-            "type": "u64"
-          },
-          {
-            "name": "max_stake",
-            "type": "u64"
-          },
-          {
-            "name": "max_roi",
-            "type": "u64"
-          },
-          {
             "name": "platform_fee",
+            "docs": [
+              "Platform fee in basis points"
+            ],
             "type": "u64"
           },
           {
             "name": "treasury",
+            "docs": [
+              "Treasury account to receive platform fees"
+            ],
             "type": "pubkey"
           },
           {
+            "name": "creator",
+            "docs": [
+              "Creator account. Responsible for creating pools, creating and closing prediction accounts"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "resolver",
+            "docs": [
+              "Resolver account. Responsible for finalizing pools"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_creator",
+            "docs": [
+              "Pending creator account. This is the account that is waiting to be accepted as the creator"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_resolver",
+            "docs": [
+              "Pending resolver account. This is the account that is waiting to be accepted as the resolver"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "self_claim_window",
+            "docs": [
+              "Self claim window in seconds. After the window ends, the platform can optionally claim rewards on behalf of the users."
+            ],
+            "type": "u64"
+          },
+          {
             "name": "bump",
+            "docs": [
+              "PDA bump"
+            ],
             "type": "u8"
           },
           {
-            "name": "stake_token_mint",
+            "name": "status",
+            "docs": [
+              "0 for frozen, 1 for active"
+            ],
+            "type": {
+              "defined": {
+                "name": "ConfigStatus"
+              }
+            }
+          },
+          {
+            "name": "_reserved",
+            "docs": [
+              "Reserved bytes for future upgrades"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                710
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Frozen"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatorRoleAcceptedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "old_creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_creator",
             "type": "pubkey"
           }
         ]
       }
     },
     {
-      "name": "ConfigUpdatedEvent",
+      "name": "PlatformConfigUpdatedEvent",
       "type": {
         "kind": "struct",
         "fields": [
@@ -664,32 +2670,16 @@
             "type": "pubkey"
           },
           {
-            "name": "min_stake",
-            "type": "u64"
-          },
-          {
-            "name": "max_stake",
-            "type": "u64"
-          },
-          {
-            "name": "max_roi",
-            "type": "u64"
-          },
-          {
-            "name": "platform_fee",
-            "type": "u64"
+            "name": "self_claim_window",
+            "type": {
+              "option": "u64"
+            }
           },
           {
             "name": "treasury",
-            "type": "pubkey"
-          },
-          {
-            "name": "stake_token_mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
+            "type": {
+              "option": "pubkey"
+            }
           }
         ]
       }
@@ -700,7 +2690,296 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "question_id",
+            "name": "reference_id",
+            "docs": [
+              "The identifier always 16 bytes"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "min_stake",
+            "docs": [
+              "Minimum stake amount"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "max_stake",
+            "docs": [
+              "Maximum stake amount"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "max_roi",
+            "docs": [
+              "Maximum ROI in basis points (e.g., 10000 = 100%)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "stake_token_mint",
+            "docs": [
+              "The allowed token to predict in this pool"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "min_outcome",
+            "docs": [
+              "Minimum possible outcome"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "max_outcome",
+            "docs": [
+              "Maximum possible outcome"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "precision",
+            "docs": [
+              "Scale factor for decimal precision (e.g., 2 means multiply by 100 for two decimal places)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "prediction_end_time",
+            "docs": [
+              "When prediction period ends"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "streak_accumulator",
+            "docs": [
+              "Optional reference to streak accumulator for time-series pools; Set to default Pubkey::default() if not used"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "finalized_timestamp",
+            "docs": [
+              "Timestamp when the pool was finalized. Default value is 0 if not finalized"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "root",
+            "docs": [
+              "Root of the merkle tree for the pool resolution"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "claims_left",
+            "docs": [
+              "Total winner claims remaining in the pool"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "status",
+            "docs": [
+              "Current status of the pool"
+            ],
+            "type": {
+              "defined": {
+                "name": "PoolStatus"
+              }
+            }
+          },
+          {
+            "name": "_reserved",
+            "docs": [
+              "Reserved for future use cases"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                80
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "PredictionsFrozen"
+          },
+          {
+            "name": "ClaimsFrozen"
+          },
+          {
+            "name": "Frozen"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolStatusUpdatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "previous_status",
+            "type": {
+              "defined": {
+                "name": "PoolStatus"
+              }
+            }
+          },
+          {
+            "name": "new_status",
+            "type": {
+              "defined": {
+                "name": "PoolStatus"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PredictionAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "is_fee_payer",
+            "docs": [
+              "Payer for rent (user - true or platform - false)"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "stake",
+            "type": "u64"
+          },
+          {
+            "name": "is_claimed",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PredictionAccountClosedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "predictor",
+            "type": "pubkey"
+          },
+          {
+            "name": "prediction_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_winner",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PredictionCreatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "predictor",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool_token_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "prediction_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "stake",
+            "type": "u64"
+          },
+          {
+            "name": "prediction",
+            "type": "i64"
+          },
+          {
+            "name": "fee_payer",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PredictionPoolCreatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "reference_id",
             "type": {
               "array": [
                 "u8",
@@ -713,21 +2992,36 @@
             "type": "i64"
           },
           {
-            "name": "total_stake",
+            "name": "streak_accumulator",
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "min_stake",
             "type": "u64"
           },
           {
-            "name": "is_finalized",
-            "type": "bool"
+            "name": "max_stake",
+            "type": "u64"
           },
           {
-            "name": "root",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
+            "name": "max_roi",
+            "type": "u64"
+          },
+          {
+            "name": "min_outcome",
+            "type": "i64"
+          },
+          {
+            "name": "max_outcome",
+            "type": "i64"
+          },
+          {
+            "name": "precision",
+            "type": "u8"
           },
           {
             "name": "bump",
@@ -737,7 +3031,38 @@
       }
     },
     {
-      "name": "PoolClaimedEvent",
+      "name": "PredictionPoolFinalizedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "merkle_root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "protocol_fee",
+            "type": "u64"
+          },
+          {
+            "name": "streak_fee",
+            "type": {
+              "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PredictionRewardsClaimedEvent",
       "type": {
         "kind": "struct",
         "fields": [
@@ -776,61 +3101,7 @@
       }
     },
     {
-      "name": "PoolCreatedEvent",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "pool_account",
-            "type": "pubkey"
-          },
-          {
-            "name": "question_id",
-            "type": {
-              "array": [
-                "u8",
-                16
-              ]
-            }
-          },
-          {
-            "name": "prediction_end_time",
-            "type": "i64"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "PoolFinalizedEvent",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "pool_account",
-            "type": "pubkey"
-          },
-          {
-            "name": "merkle_root",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "protocol_fee",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "PoolPredictedEvent",
+      "name": "PredictionStakeIncreasedEvent",
       "type": {
         "kind": "struct",
         "fields": [
@@ -840,10 +3111,6 @@
           },
           {
             "name": "predictor",
-            "type": "pubkey"
-          },
-          {
-            "name": "pool_token_account",
             "type": "pubkey"
           },
           {
@@ -857,30 +3124,234 @@
           {
             "name": "fee_payer",
             "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
           }
         ]
       }
     },
     {
-      "name": "PredictionAccount",
+      "name": "PredictionValueUpdatedEvent",
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "pool_account",
+            "type": "pubkey"
+          },
           {
             "name": "predictor",
             "type": "pubkey"
           },
           {
-            "name": "pool",
+            "name": "prediction_account",
             "type": "pubkey"
           },
           {
-            "name": "is_claimed",
-            "type": "bool"
+            "name": "prediction",
+            "type": "i64"
+          },
+          {
+            "name": "fee_payer",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProgramStatusToggledEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "previous_status",
+            "type": {
+              "defined": {
+                "name": "ConfigStatus"
+              }
+            }
+          },
+          {
+            "name": "new_status",
+            "type": {
+              "defined": {
+                "name": "ConfigStatus"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProposeUpdateAccessEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_creator",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "pending_resolver",
+            "type": {
+              "option": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ResolverRoleAcceptedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "old_resolver",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_resolver",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StreakAccumulatorAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "time_series_id",
+            "docs": [
+              "Unique identifier for the time series"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "fee_percentage",
+            "docs": [
+              "Fee percentage from platform fees in basis points (e.g., 10000 = 100%)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "_reserved",
+            "docs": [
+              "Reserved for future use cases"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                200
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StreakRegisteredEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "streak_accumulator_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "time_series_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "fee_percentage",
+            "type": "u16"
           },
           {
             "name": "bump",
             "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StreakRewardsClaimedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "streak_time_series_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "streak_accumulator_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "streak_token_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "user_token_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
           }
         ]
       }
