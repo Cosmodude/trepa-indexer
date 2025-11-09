@@ -1,10 +1,12 @@
 import { run } from '@subsquid/batch-processor';
 import { augmentBlock } from '@subsquid/solana-objects';
+import bs58 from 'bs58';
 import { config as dotenvConfig } from 'dotenv';
 
 import * as trepa from './abi/trepa';
 import { dataSource, PORTAL_URL } from './config';
 import { DrizzleDatabase } from './drizzle/database';
+import { processEventData } from './helpers/event-processor';
 
 dotenvConfig();
 
@@ -41,7 +43,7 @@ async function startIndexer() {
       );
 
       let trepaInnerInstructions = 0;
-      const processedEvents = 0;
+      let processedEvents = 0;
 
       for (const block of blocks) {
         for (const instruction of block.instructions) {
@@ -61,11 +63,45 @@ async function startIndexer() {
             continue;
           }
 
-          console.log(
-            'Trepa inner instructions:',
-            JSON.stringify(trepaInnerOnly, null, 2),
-          );
           trepaInnerInstructions += trepaInnerOnly.length;
+
+          const transaction = instruction.getTransaction();
+          const timestamp = new Date(block.header.timestamp * 1000);
+          const txSignature = transaction.signatures?.[0] || 'unknown';
+
+          for (const innerInstruction of trepaInnerOnly) {
+            if (!innerInstruction.data) {
+              continue;
+            }
+
+            let dataBuffer: Buffer;
+            try {
+              dataBuffer = Buffer.from(bs58.decode(innerInstruction.data));
+            } catch (e) {
+              console.error(
+                'Failed to decode instruction data from base58:',
+                e,
+              );
+              continue;
+            }
+
+            if (dataBuffer.length <= 8) {
+              continue;
+            }
+
+            const eventDataBuffer = dataBuffer.subarray(8);
+            const eventDataHex = '0x' + eventDataBuffer.toString('hex');
+
+            await processEventData(
+              eventDataBuffer.subarray(0, 8),
+              eventDataHex,
+              timestamp,
+              txSignature,
+              collections,
+            );
+
+            processedEvents++;
+          }
         }
       }
 
@@ -81,8 +117,8 @@ async function startIndexer() {
           ...collections.createdEvents,
           ...collections.finalizedEvents,
         ];
-        await db.insert(allEvents);
-        console.log(`\nInserted ${allEvents.length} events into database`);
+        await db.upsert(allEvents);
+        console.log(`\nUpserted ${allEvents.length} events into database`);
       }
 
       console.log('\n=== SUMMARY ===');

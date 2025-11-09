@@ -23,24 +23,12 @@ export async function processEventData(
   const { predictedEvents, claimedEvents, createdEvents, finalizedEvents } =
     collections;
 
-  const discriminatorHex = '0x' + discriminator.toString('hex');
-  console.log(
-    `processEventData called with discriminator: ${discriminatorHex}`,
-  );
-  let matched = false;
-
   const predictedDiscriminator = Buffer.from(
     trepa.events.PredictionCreatedEvent.d8.slice(2),
     'hex',
   );
-  const predictedDiscriminatorHex =
-    '0x' + predictedDiscriminator.toString('hex');
-  console.log(
-    `Checking PredictionCreatedEvent discriminator: ${predictedDiscriminatorHex}`,
-  );
+
   if (discriminator.equals(predictedDiscriminator)) {
-    console.log('Matched PredictionCreatedEvent!');
-    matched = true;
     try {
       const predictedEvent = trepa.events.PredictionCreatedEvent.decode({
         msg: hexData,
@@ -59,23 +47,19 @@ export async function processEventData(
       };
 
       predictedEvents.push(predictedEventEntity);
+      console.log(`PredictionCreatedEvent | tx: ${txSignature}`);
     } catch (error) {
-      console.error('Failed to decode PoolPredictedEvent:', error);
+      console.error('Failed to decode PredictionCreatedEvent:', error);
     }
+    return;
   }
 
   const poolClaimedDiscriminator = Buffer.from(
     trepa.events.PredictionRewardsClaimedEvent.d8.slice(2),
     'hex',
   );
-  const poolClaimedDiscriminatorHex =
-    '0x' + poolClaimedDiscriminator.toString('hex');
-  console.log(
-    `Checking PredictionRewardsClaimedEvent discriminator: ${poolClaimedDiscriminatorHex}`,
-  );
+
   if (discriminator.equals(poolClaimedDiscriminator)) {
-    console.log('Matched PredictionRewardsClaimedEvent!');
-    matched = true;
     try {
       const claimedEvent = trepa.events.PredictionRewardsClaimedEvent.decode({
         msg: hexData,
@@ -94,23 +78,19 @@ export async function processEventData(
       };
 
       claimedEvents.push(claimedEventEntity);
+      console.log(`PredictionRewardsClaimedEvent | tx: ${txSignature}`);
     } catch (error) {
-      console.error('Failed to decode PoolClaimedEvent:', error);
+      console.error('Failed to decode PredictionRewardsClaimedEvent:', error);
     }
+    return;
   }
 
   const poolCreatedDiscriminator = Buffer.from(
     trepa.events.PredictionPoolCreatedEvent.d8.slice(2),
     'hex',
   );
-  const poolCreatedDiscriminatorHex =
-    '0x' + poolCreatedDiscriminator.toString('hex');
-  console.log(
-    `Checking PredictionPoolCreatedEvent discriminator: ${poolCreatedDiscriminatorHex}`,
-  );
+
   if (discriminator.equals(poolCreatedDiscriminator)) {
-    console.log('Matched PredictionPoolCreatedEvent!');
-    matched = true;
     try {
       const createdEvent = trepa.events.PredictionPoolCreatedEvent.decode({
         msg: hexData,
@@ -127,23 +107,19 @@ export async function processEventData(
       };
 
       createdEvents.push(createdEventEntity);
+      console.log(`PredictionPoolCreatedEvent | tx: ${txSignature}`);
     } catch (error) {
-      console.error('Failed to decode PoolCreatedEvent:', error);
+      console.error('Failed to decode PredictionPoolCreatedEvent:', error);
     }
+    return;
   }
 
   const poolFinalizedDiscriminator = Buffer.from(
     trepa.events.PredictionPoolFinalizedEvent.d8.slice(2),
     'hex',
   );
-  const poolFinalizedDiscriminatorHex =
-    '0x' + poolFinalizedDiscriminator.toString('hex');
-  console.log(
-    `Checking PredictionPoolFinalizedEvent discriminator: ${poolFinalizedDiscriminatorHex}`,
-  );
+
   if (discriminator.equals(poolFinalizedDiscriminator)) {
-    console.log('Matched PredictionPoolFinalizedEvent!');
-    matched = true;
     try {
       const finalizedEvent = trepa.events.PredictionPoolFinalizedEvent.decode({
         msg: hexData,
@@ -159,14 +135,9 @@ export async function processEventData(
       };
 
       finalizedEvents.push(finalizedEventEntity);
+      console.log(`PredictionPoolFinalizedEvent | tx: ${txSignature}`);
     } catch (error) {
-      console.error('Failed to decode PoolFinalizedEvent:', error);
+      console.error('Failed to decode PredictionPoolFinalizedEvent:', error);
     }
-  }
-
-  if (!matched) {
-    console.log(
-      `processEventData completed - no match found for discriminator: ${discriminatorHex}`,
-    );
   }
 }
