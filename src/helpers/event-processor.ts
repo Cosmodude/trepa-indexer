@@ -6,13 +6,13 @@ export interface EventCollections {
   claimedEvents: NewClaim[];
 }
 
-export async function processEventData(
+export function processEventData(
   discriminator: Buffer,
   hexData: string,
   timestamp: Date,
   txSignature: string,
   collections: EventCollections,
-): Promise<void> {
+): void {
   const { predictedEvents, claimedEvents } = collections;
 
   const predictedDiscriminator = Buffer.from(
@@ -76,4 +76,5 @@ export async function processEventData(
     }
     return;
   }
+  console.log(`Detected event: ${discriminator.toString('hex')}`);
 }

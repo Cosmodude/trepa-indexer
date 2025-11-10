@@ -40,10 +40,9 @@ async function startIndexer() {
         `Processing ${blocks.length} blocks (at block height ${blocks[0]?.header.number || 'unknown'})`,
       );
 
-      let trepaInnerInstructions = 0;
-      let processedEvents = 0;
-
       for (const block of blocks) {
+        const timestamp = new Date(block.header.timestamp * 1000);
+
         for (const instruction of block.instructions) {
           if (instruction.programId !== trepa.programId) {
             continue;
@@ -61,11 +60,8 @@ async function startIndexer() {
             continue;
           }
 
-          trepaInnerInstructions += trepaInnerOnly.length;
-
-          const transaction = instruction.getTransaction();
-          const timestamp = new Date(block.header.timestamp * 1000);
-          const txSignature = transaction.signatures?.[0] || 'unknown';
+          const txSignature =
+            '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
 
           for (const innerInstruction of trepaInnerOnly) {
             if (!innerInstruction.data) {
@@ -90,15 +86,13 @@ async function startIndexer() {
             const eventDataBuffer = dataBuffer.subarray(8);
             const eventDataHex = '0x' + eventDataBuffer.toString('hex');
 
-            await processEventData(
+            processEventData(
               eventDataBuffer.subarray(0, 8),
               eventDataHex,
               timestamp,
               txSignature,
               collections,
             );
-
-            processedEvents++;
           }
         }
       }
@@ -114,10 +108,6 @@ async function startIndexer() {
         await db.upsert(allEvents);
         console.log(`\nUpserted ${allEvents.length} events into database`);
       }
-
-      console.log('\n=== SUMMARY ===');
-      console.log(`Trepa inner instructions: ${trepaInnerInstructions}`);
-      console.log(`Processed events: ${processedEvents}`);
     } catch (error) {
       console.error('Failed to process blocks:', error);
       throw error;
