@@ -1,15 +1,24 @@
-import { pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  text,
+  timestamp,
+  varchar,
+  numeric,
+  integer,
+  boolean,
+} from 'drizzle-orm/pg-core';
 
-export const predictedEvent = pgTable('predicted_event', {
+export const predictions = pgTable('predictions', {
   id: varchar('id').primaryKey(),
   transactionSignature: text('transaction_signature').notNull(),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull(),
-  poolAccount: text('pool_account').notNull(),
-  predictor: text('predictor').notNull(),
-  poolTokenAccount: text('pool_token_account').notNull(),
-  predictionAccount: text('prediction_account').notNull(),
-  stake: text('stake').notNull(),
-  feePayer: text('fee_payer').notNull(),
+  timestamp: timestamp('timestamp', { withTimezone: false }).notNull(),
+  poolAccount: varchar('pool_account', { length: 44 }).notNull(),
+  predictorAccount: varchar('predictor_account', { length: 44 }).notNull(),
+  poolTokenAccount: varchar('pool_token_account', { length: 44 }).notNull(),
+  predictionAccount: varchar('prediction_account', { length: 44 }).notNull(),
+  prediction: numeric('prediction', { precision: 25, scale: 6 }).notNull(),
+  stake: integer('stake').notNull(),
+  isFeePayer: boolean('is_fee_payer').notNull(),
 });
 
 export const claimedEvent = pgTable('claimed_event', {
@@ -43,8 +52,8 @@ export const poolFinalizedEvent = pgTable('pool_finalized_event', {
   protocolFee: text('protocol_fee').notNull(),
 });
 
-export type PredictedEvent = typeof predictedEvent.$inferSelect;
-export type NewPredictedEvent = typeof predictedEvent.$inferInsert;
+export type Prediction = typeof predictions.$inferSelect;
+export type NewPrediction = typeof predictions.$inferInsert;
 
 export type ClaimedEvent = typeof claimedEvent.$inferSelect;
 export type NewClaimedEvent = typeof claimedEvent.$inferInsert;
