@@ -10,7 +10,7 @@ export const dataSource = new DataSourceBuilder()
       retryAttempts: Infinity,
     },
   })
-  .setBlockRange({ from: START_BLOCK_HEIGHT, to: START_BLOCK_HEIGHT + 1000 })
+  .setBlockRange({ from: START_BLOCK_HEIGHT })
   .setFields({
     block: {
       timestamp: true,

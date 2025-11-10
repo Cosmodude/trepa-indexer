@@ -47,7 +47,9 @@ export async function processEventData(
       };
 
       predictedEvents.push(predictedEventEntity);
-      console.log(`PredictionCreatedEvent | tx: ${txSignature}`);
+      console.log(
+        `PredictionCreatedEvent | tx: ${txSignature} | block: ${timestamp.toISOString()} | recorded: ${new Date().toISOString()}`,
+      );
     } catch (error) {
       console.error('Failed to decode PredictionCreatedEvent:', error);
     }
@@ -78,7 +80,9 @@ export async function processEventData(
       };
 
       claimedEvents.push(claimedEventEntity);
-      console.log(`PredictionRewardsClaimedEvent | tx: ${txSignature}`);
+      console.log(
+        `PredictionRewardsClaimedEvent | tx: ${txSignature} | block: ${timestamp.toISOString()} | recorded: ${new Date().toISOString()}`,
+      );
     } catch (error) {
       console.error('Failed to decode PredictionRewardsClaimedEvent:', error);
     }
@@ -107,7 +111,9 @@ export async function processEventData(
       };
 
       createdEvents.push(createdEventEntity);
-      console.log(`PredictionPoolCreatedEvent | tx: ${txSignature}`);
+      console.log(
+        `PredictionPoolCreatedEvent | tx: ${txSignature} | block: ${timestamp.toISOString()} | recorded: ${new Date().toISOString()}`,
+      );
     } catch (error) {
       console.error('Failed to decode PredictionPoolCreatedEvent:', error);
     }
@@ -135,7 +141,9 @@ export async function processEventData(
       };
 
       finalizedEvents.push(finalizedEventEntity);
-      console.log(`PredictionPoolFinalizedEvent | tx: ${txSignature}`);
+      console.log(
+        `PredictionPoolFinalizedEvent | tx: ${txSignature} | block: ${timestamp.toISOString()} | recorded: ${new Date().toISOString()}`,
+      );
     } catch (error) {
       console.error('Failed to decode PredictionPoolFinalizedEvent:', error);
     }
