@@ -1,14 +1,14 @@
 import * as trepa from '../abi/trepa';
 import {
-  type NewPredictedEvent,
-  type NewClaimedEvent,
+  type NewPrediction,
+  type NewClaim,
   type NewPoolCreatedEvent,
   type NewPoolFinalizedEvent,
 } from '../drizzle/schema';
 
 export interface EventCollections {
-  predictedEvents: NewPredictedEvent[];
-  claimedEvents: NewClaimedEvent[];
+  predictedEvents: NewPrediction[];
+  claimedEvents: NewClaim[];
   createdEvents: NewPoolCreatedEvent[];
   finalizedEvents: NewPoolFinalizedEvent[];
 }
@@ -34,16 +34,17 @@ export async function processEventData(
         msg: hexData,
       });
 
-      const predictedEventEntity: NewPredictedEvent = {
+      const predictedEventEntity: NewPrediction = {
         id: txSignature,
         transactionSignature: txSignature,
         timestamp: timestamp,
         poolAccount: predictedEvent.poolAccount,
-        predictor: predictedEvent.predictor,
+        predictorAccount: predictedEvent.predictor,
         poolTokenAccount: predictedEvent.poolTokenAccount,
         predictionAccount: predictedEvent.predictionAccount,
-        stake: predictedEvent.stake.toString(),
-        feePayer: predictedEvent.feePayer,
+        prediction: predictedEvent.prediction.toString(),
+        stake: parseInt(predictedEvent.stake.toString()),
+        isFeePayer: predictedEvent.feePayer === predictedEvent.predictor,
       };
 
       predictedEvents.push(predictedEventEntity);
@@ -67,16 +68,11 @@ export async function processEventData(
         msg: hexData,
       });
 
-      const claimedEventEntity: NewClaimedEvent = {
-        id: txSignature,
-        transactionSignature: txSignature,
-        timestamp: timestamp,
-        poolAccount: claimedEvent.poolAccount,
-        predictor: claimedEvent.predictor,
-        poolTokenAccount: claimedEvent.poolTokenAccount,
+      const claimedEventEntity: NewClaim = {
+        userWalletAddress: claimedEvent.predictor,
         predictionAccount: claimedEvent.predictionAccount,
-        amount: claimedEvent.amount.toString(),
-        proof: JSON.stringify(claimedEvent.proof),
+        amount: parseInt(claimedEvent.amount.toString()),
+        rewardId: undefined,
       };
 
       claimedEvents.push(claimedEventEntity);

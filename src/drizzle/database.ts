@@ -1,11 +1,11 @@
 import { db } from './db';
 import {
-  predictedEvent,
-  claimedEvent,
+  predictions,
+  claims,
   poolCreatedEvent,
   poolFinalizedEvent,
-  type NewPredictedEvent,
-  type NewClaimedEvent,
+  type NewPrediction,
+  type NewClaim,
   type NewPoolCreatedEvent,
   type NewPoolFinalizedEvent,
 } from './schema';
@@ -24,16 +24,16 @@ export class DrizzleDatabase {
     if (records.length === 0) return;
 
     // Group records by type
-    const predictedEvents: NewPredictedEvent[] = [];
-    const claimedEvents: NewClaimedEvent[] = [];
+    const predictedEvents: NewPrediction[] = [];
+    const claimedEvents: NewClaim[] = [];
     const createdEvents: NewPoolCreatedEvent[] = [];
     const finalizedEvents: NewPoolFinalizedEvent[] = [];
 
     for (const record of records) {
       if (record instanceof Object && 'stake' in record) {
-        predictedEvents.push(record as NewPredictedEvent);
+        predictedEvents.push(record as NewPrediction);
       } else if (record instanceof Object && 'amount' in record) {
-        claimedEvents.push(record as NewClaimedEvent);
+        claimedEvents.push(record as NewClaim);
       } else if (record instanceof Object && 'questionId' in record) {
         createdEvents.push(record as NewPoolCreatedEvent);
       } else if (record instanceof Object && 'merkleRoot' in record) {
@@ -43,10 +43,10 @@ export class DrizzleDatabase {
 
     // Insert each type of event
     if (predictedEvents.length > 0) {
-      await db.insert(predictedEvent).values(predictedEvents);
+      await db.insert(predictions).values(predictedEvents);
     }
     if (claimedEvents.length > 0) {
-      await db.insert(claimedEvent).values(claimedEvents);
+      await db.insert(claims).values(claimedEvents);
     }
     if (createdEvents.length > 0) {
       await db.insert(poolCreatedEvent).values(createdEvents);
@@ -60,16 +60,16 @@ export class DrizzleDatabase {
     if (records.length === 0) return;
 
     // Group records by type
-    const predictedEvents: NewPredictedEvent[] = [];
-    const claimedEvents: NewClaimedEvent[] = [];
+    const predictedEvents: NewPrediction[] = [];
+    const claimedEvents: NewClaim[] = [];
     const createdEvents: NewPoolCreatedEvent[] = [];
     const finalizedEvents: NewPoolFinalizedEvent[] = [];
 
     for (const record of records) {
       if (record instanceof Object && 'stake' in record) {
-        predictedEvents.push(record as NewPredictedEvent);
+        predictedEvents.push(record as NewPrediction);
       } else if (record instanceof Object && 'amount' in record) {
-        claimedEvents.push(record as NewClaimedEvent);
+        claimedEvents.push(record as NewClaim);
       } else if (record instanceof Object && 'questionId' in record) {
         createdEvents.push(record as NewPoolCreatedEvent);
       } else if (record instanceof Object && 'merkleRoot' in record) {
@@ -80,12 +80,12 @@ export class DrizzleDatabase {
     // Use ON CONFLICT DO NOTHING for upsert behavior
     if (predictedEvents.length > 0) {
       await db
-        .insert(predictedEvent)
+        .insert(predictions)
         .values(predictedEvents)
         .onConflictDoNothing();
     }
     if (claimedEvents.length > 0) {
-      await db.insert(claimedEvent).values(claimedEvents).onConflictDoNothing();
+      await db.insert(claims).values(claimedEvents).onConflictDoNothing();
     }
     if (createdEvents.length > 0) {
       await db
