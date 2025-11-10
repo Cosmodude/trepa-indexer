@@ -7,7 +7,7 @@ CREATE TABLE "predictions" (
 	"pool_token_account" varchar(44) NOT NULL,
 	"prediction_account" varchar(44) NOT NULL,
 	"prediction" numeric(25, 6) NOT NULL,
-	"stake" integer NOT NULL,
+	"stake" bigint NOT NULL,
 	"is_fee_payer" boolean NOT NULL
 );
 --> statement-breakpoint
@@ -18,7 +18,7 @@ CREATE TABLE "claims" (
 	"reward_id" uuid,
 	"user_wallet_address" varchar(44) NOT NULL,
 	"prediction_account" varchar(44) NOT NULL,
-	"amount" integer NOT NULL
+	"amount" bigint NOT NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX "idx_claims_prediction_user" ON "claims" USING btree ("prediction_account","user_wallet_address");
