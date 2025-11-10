@@ -34,8 +34,6 @@ async function startIndexer() {
       const collections = {
         predictedEvents: [],
         claimedEvents: [],
-        createdEvents: [],
-        finalizedEvents: [],
       };
 
       console.log(
@@ -107,15 +105,11 @@ async function startIndexer() {
 
       if (
         collections.predictedEvents.length > 0 ||
-        collections.claimedEvents.length > 0 ||
-        collections.createdEvents.length > 0 ||
-        collections.finalizedEvents.length > 0
+        collections.claimedEvents.length > 0
       ) {
         const allEvents = [
           ...collections.predictedEvents,
           ...collections.claimedEvents,
-          ...collections.createdEvents,
-          ...collections.finalizedEvents,
         ];
         await db.upsert(allEvents);
         console.log(`\nUpserted ${allEvents.length} events into database`);

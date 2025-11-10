@@ -49,33 +49,8 @@ export const claims = pgTable(
   ],
 );
 
-export const poolCreatedEvent = pgTable('pool_created_event', {
-  id: varchar('id').primaryKey(),
-  transactionSignature: text('transaction_signature').notNull(),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull(),
-  poolAccount: text('pool_account').notNull(),
-  questionId: text('question_id').notNull(),
-  predictionEndTime: text('prediction_end_time').notNull(),
-  bump: text('bump').notNull(),
-});
-
-export const poolFinalizedEvent = pgTable('pool_finalized_event', {
-  id: varchar('id').primaryKey(),
-  transactionSignature: text('transaction_signature').notNull(),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull(),
-  poolAccount: text('pool_account').notNull(),
-  merkleRoot: text('merkle_root').notNull(),
-  protocolFee: text('protocol_fee').notNull(),
-});
-
 export type Prediction = typeof predictions.$inferSelect;
 export type NewPrediction = typeof predictions.$inferInsert;
 
 export type Claim = typeof claims.$inferSelect;
 export type NewClaim = typeof claims.$inferInsert;
-
-export type PoolCreatedEvent = typeof poolCreatedEvent.$inferSelect;
-export type NewPoolCreatedEvent = typeof poolCreatedEvent.$inferInsert;
-
-export type PoolFinalizedEvent = typeof poolFinalizedEvent.$inferSelect;
-export type NewPoolFinalizedEvent = typeof poolFinalizedEvent.$inferInsert;

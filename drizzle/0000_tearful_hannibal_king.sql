@@ -21,25 +21,6 @@ CREATE TABLE "claims" (
 	"amount" integer NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "pool_created_event" (
-	"id" varchar PRIMARY KEY NOT NULL,
-	"transaction_signature" text NOT NULL,
-	"timestamp" timestamp with time zone NOT NULL,
-	"pool_account" text NOT NULL,
-	"question_id" text NOT NULL,
-	"prediction_end_time" text NOT NULL,
-	"bump" text NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "pool_finalized_event" (
-	"id" varchar PRIMARY KEY NOT NULL,
-	"transaction_signature" text NOT NULL,
-	"timestamp" timestamp with time zone NOT NULL,
-	"pool_account" text NOT NULL,
-	"merkle_root" text NOT NULL,
-	"protocol_fee" text NOT NULL
-);
---> statement-breakpoint
 CREATE UNIQUE INDEX "idx_claims_prediction_user" ON "claims" USING btree ("prediction_account","user_wallet_address");
 --> statement-breakpoint
 CREATE INDEX "idx_claims_user_wallet" ON "claims" USING btree ("user_wallet_address");

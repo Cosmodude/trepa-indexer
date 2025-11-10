@@ -2,12 +2,8 @@ import { db } from './db';
 import {
   predictions,
   claims,
-  poolCreatedEvent,
-  poolFinalizedEvent,
   type NewPrediction,
   type NewClaim,
-  type NewPoolCreatedEvent,
-  type NewPoolFinalizedEvent,
 } from './schema';
 
 export class DrizzleDatabase {
@@ -26,18 +22,12 @@ export class DrizzleDatabase {
     // Group records by type
     const predictedEvents: NewPrediction[] = [];
     const claimedEvents: NewClaim[] = [];
-    const createdEvents: NewPoolCreatedEvent[] = [];
-    const finalizedEvents: NewPoolFinalizedEvent[] = [];
 
     for (const record of records) {
       if (record instanceof Object && 'stake' in record) {
         predictedEvents.push(record as NewPrediction);
       } else if (record instanceof Object && 'amount' in record) {
         claimedEvents.push(record as NewClaim);
-      } else if (record instanceof Object && 'questionId' in record) {
-        createdEvents.push(record as NewPoolCreatedEvent);
-      } else if (record instanceof Object && 'merkleRoot' in record) {
-        finalizedEvents.push(record as NewPoolFinalizedEvent);
       }
     }
 
@@ -48,12 +38,6 @@ export class DrizzleDatabase {
     if (claimedEvents.length > 0) {
       await db.insert(claims).values(claimedEvents);
     }
-    if (createdEvents.length > 0) {
-      await db.insert(poolCreatedEvent).values(createdEvents);
-    }
-    if (finalizedEvents.length > 0) {
-      await db.insert(poolFinalizedEvent).values(finalizedEvents);
-    }
   }
 
   async upsert(records: any[]): Promise<void> {
@@ -62,18 +46,12 @@ export class DrizzleDatabase {
     // Group records by type
     const predictedEvents: NewPrediction[] = [];
     const claimedEvents: NewClaim[] = [];
-    const createdEvents: NewPoolCreatedEvent[] = [];
-    const finalizedEvents: NewPoolFinalizedEvent[] = [];
 
     for (const record of records) {
       if (record instanceof Object && 'stake' in record) {
         predictedEvents.push(record as NewPrediction);
       } else if (record instanceof Object && 'amount' in record) {
         claimedEvents.push(record as NewClaim);
-      } else if (record instanceof Object && 'questionId' in record) {
-        createdEvents.push(record as NewPoolCreatedEvent);
-      } else if (record instanceof Object && 'merkleRoot' in record) {
-        finalizedEvents.push(record as NewPoolFinalizedEvent);
       }
     }
 
@@ -86,18 +64,6 @@ export class DrizzleDatabase {
     }
     if (claimedEvents.length > 0) {
       await db.insert(claims).values(claimedEvents).onConflictDoNothing();
-    }
-    if (createdEvents.length > 0) {
-      await db
-        .insert(poolCreatedEvent)
-        .values(createdEvents)
-        .onConflictDoNothing();
-    }
-    if (finalizedEvents.length > 0) {
-      await db
-        .insert(poolFinalizedEvent)
-        .values(finalizedEvents)
-        .onConflictDoNothing();
     }
   }
 
