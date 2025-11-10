@@ -6,6 +6,9 @@ import {
   numeric,
   integer,
   boolean,
+  uuid,
+  index,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 export const predictions = pgTable('predictions', {
@@ -21,17 +24,30 @@ export const predictions = pgTable('predictions', {
   isFeePayer: boolean('is_fee_payer').notNull(),
 });
 
-export const claimedEvent = pgTable('claimed_event', {
-  id: varchar('id').primaryKey(),
-  transactionSignature: text('transaction_signature').notNull(),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull(),
-  poolAccount: text('pool_account').notNull(),
-  predictor: text('predictor').notNull(),
-  poolTokenAccount: text('pool_token_account').notNull(),
-  predictionAccount: text('prediction_account').notNull(),
-  amount: text('amount').notNull(),
-  proof: text('proof').notNull(),
-});
+export const claims = pgTable(
+  'claims',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    createdAt: timestamp('created_at', { withTimezone: false })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: false })
+      .notNull()
+      .defaultNow(),
+    rewardId: uuid('reward_id'),
+    userWalletAddress: varchar('user_wallet_address', { length: 44 }).notNull(),
+    predictionAccount: varchar('prediction_account', { length: 44 }).notNull(),
+    amount: integer('amount').notNull(),
+  },
+  (t) => [
+    uniqueIndex('idx_claims_prediction_user').on(
+      t.predictionAccount,
+      t.userWalletAddress,
+    ),
+    index('idx_claims_user_wallet').on(t.userWalletAddress),
+    index('idx_claims_created_at').on(t.createdAt),
+  ],
+);
 
 export const poolCreatedEvent = pgTable('pool_created_event', {
   id: varchar('id').primaryKey(),
@@ -55,8 +71,8 @@ export const poolFinalizedEvent = pgTable('pool_finalized_event', {
 export type Prediction = typeof predictions.$inferSelect;
 export type NewPrediction = typeof predictions.$inferInsert;
 
-export type ClaimedEvent = typeof claimedEvent.$inferSelect;
-export type NewClaimedEvent = typeof claimedEvent.$inferInsert;
+export type Claim = typeof claims.$inferSelect;
+export type NewClaim = typeof claims.$inferInsert;
 
 export type PoolCreatedEvent = typeof poolCreatedEvent.$inferSelect;
 export type NewPoolCreatedEvent = typeof poolCreatedEvent.$inferInsert;
