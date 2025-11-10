@@ -13,7 +13,7 @@ dotenvConfig();
 console.log('Data source configuration:');
 console.log('- Portal URL: ', PORTAL_URL);
 console.log('- Trepa Program ID: ', trepa.programId);
-console.log('- Tracking Trepa program instructions and inner instructions');
+console.log('- Tracking Trepa program cpi_emit inner instructions');
 
 async function startIndexer() {
   console.log('Starting indexer with timeout...');
@@ -60,8 +60,11 @@ async function startIndexer() {
             continue;
           }
 
-          const txSignature =
-            '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+          const txSignature = instruction.getTransaction()?.signatures?.[0];
+          if (!txSignature) {
+            console.error('Transaction signature not found');
+            continue;
+          }
 
           for (const innerInstruction of trepaInnerOnly) {
             if (!innerInstruction.data) {

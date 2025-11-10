@@ -4,7 +4,7 @@ import {
   timestamp,
   varchar,
   numeric,
-  integer,
+  bigint,
   boolean,
   uuid,
   index,
@@ -20,7 +20,7 @@ export const predictions = pgTable('predictions', {
   poolTokenAccount: varchar('pool_token_account', { length: 44 }).notNull(),
   predictionAccount: varchar('prediction_account', { length: 44 }).notNull(),
   prediction: numeric('prediction', { precision: 25, scale: 6 }).notNull(),
-  stake: integer('stake').notNull(),
+  stake: bigint('stake', { mode: 'bigint' }).notNull(),
   isFeePayer: boolean('is_fee_payer').notNull(),
 });
 
@@ -37,7 +37,7 @@ export const claims = pgTable(
     rewardId: uuid('reward_id'),
     userWalletAddress: varchar('user_wallet_address', { length: 44 }).notNull(),
     predictionAccount: varchar('prediction_account', { length: 44 }).notNull(),
-    amount: integer('amount').notNull(),
+    amount: bigint('amount', { mode: 'bigint' }).notNull(),
   },
   (t) => [
     uniqueIndex('idx_claims_prediction_user').on(

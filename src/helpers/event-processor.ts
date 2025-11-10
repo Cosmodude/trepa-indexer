@@ -35,7 +35,7 @@ export function processEventData(
         poolTokenAccount: predictedEvent.poolTokenAccount,
         predictionAccount: predictedEvent.predictionAccount,
         prediction: predictedEvent.prediction.toString(),
-        stake: parseInt(predictedEvent.stake.toString()),
+        stake: BigInt(predictedEvent.stake.toString()),
         isFeePayer: predictedEvent.feePayer === predictedEvent.predictor,
       };
 
@@ -63,7 +63,7 @@ export function processEventData(
       const claimedEventEntity: NewClaim = {
         userWalletAddress: claimedEvent.predictor,
         predictionAccount: claimedEvent.predictionAccount,
-        amount: parseInt(claimedEvent.amount.toString()),
+        amount: BigInt(claimedEvent.amount.toString()),
         rewardId: undefined,
       };
 
