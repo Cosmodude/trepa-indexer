@@ -5,13 +5,14 @@ import {
   type NewPrediction,
   type NewClaim,
 } from './schema';
+import { START_BLOCK_HEIGHT } from '../config';
 
 export class DrizzleDatabase {
   async connect(): Promise<{ height: number; hash: string }> {
     // Return the starting block height from the main configuration
     // This should match START_BLOCK_HEIGHT in main.ts
     return {
-      height: 399_335_925,
+      height: START_BLOCK_HEIGHT,
       hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
     };
   }
