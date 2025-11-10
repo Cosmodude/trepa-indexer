@@ -18,7 +18,7 @@ CREATE TABLE "claims" (
 	"reward_id" uuid,
 	"user_wallet_address" varchar(44) NOT NULL,
 	"prediction_account" varchar(44) NOT NULL,
-	"amount" integer NOT NULL
+	"amount" bigint NOT NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX "idx_claims_prediction_user" ON "claims" USING btree ("prediction_account","user_wallet_address");
