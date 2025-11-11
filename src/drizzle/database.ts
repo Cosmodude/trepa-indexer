@@ -254,7 +254,6 @@ export class DrizzleDatabase {
   }
 
   async rollbackBlock(
-    schema: string,
     tx: DatabaseTransaction,
     blockHeight: number,
   ): Promise<void> {
