@@ -29,6 +29,7 @@ export const dataSource = new DataSourceBuilder()
   .addInstruction({
     where: {
       programId: [TREPA_PROGRAM_ID],
+      isCommitted: true,
     },
     include: {
       transaction: true,
