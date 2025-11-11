@@ -45,7 +45,12 @@ export async function updateRecords(
   const { predictedEvents, claimedEvents } = classifyRecords(records);
 
   for (const event of predictedEvents) {
-    await db.update(predictions).set(event).where(eq(predictions.id, event.id));
+    if (event.id) {
+      await db
+        .update(predictions)
+        .set(event)
+        .where(eq(predictions.id, event.id));
+    }
   }
   for (const event of claimedEvents) {
     if (event.id) {
@@ -63,7 +68,9 @@ export async function deleteRecords(
   const { predictedEvents, claimedEvents } = classifyRecords(records);
 
   for (const event of predictedEvents) {
-    await db.delete(predictions).where(eq(predictions.id, event.id));
+    if (event.id) {
+      await db.delete(predictions).where(eq(predictions.id, event.id));
+    }
   }
   for (const event of claimedEvents) {
     if (event.id) {
