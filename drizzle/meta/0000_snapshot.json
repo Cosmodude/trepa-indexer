@@ -1,5 +1,5 @@
 {
-  "id": "5de32a44-cd84-4676-ab10-ee9dfbe923eb",
+  "id": "e3c5caff-6515-4b0d-a6fd-95fb00253a8c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -20,14 +20,14 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "default": "now()"
+          "default": "current_timestamp"
         },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "default": "now()"
+          "default": "current_timestamp"
         },
         "reward_id": {
           "name": "reward_id",
@@ -114,8 +114,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.hot_block": {
-      "name": "hot_block",
+    "public.hot_blocks": {
+      "name": "hot_blocks",
       "schema": "",
       "columns": {
         "height": {
@@ -129,6 +129,20 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "current_timestamp"
         }
       },
       "indexes": {},
@@ -139,8 +153,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.hot_change_log": {
-      "name": "hot_change_log",
+    "public.hot_change_logs": {
+      "name": "hot_change_logs",
       "schema": "",
       "columns": {
         "block_height": {
@@ -160,14 +174,28 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "current_timestamp"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "hot_change_log_block_height_hot_block_height_fk": {
-          "name": "hot_change_log_block_height_hot_block_height_fk",
-          "tableFrom": "hot_change_log",
-          "tableTo": "hot_block",
+        "hot_change_logs_block_height_hot_blocks_height_fk": {
+          "name": "hot_change_logs_block_height_hot_blocks_height_fk",
+          "tableFrom": "hot_change_logs",
+          "tableTo": "hot_blocks",
           "columnsFrom": [
             "block_height"
           ],
@@ -179,8 +207,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "hot_change_log_block_height_index_pk": {
-          "name": "hot_change_log_block_height_index_pk",
+        "hot_change_logs_block_height_index_pk": {
+          "name": "hot_change_logs_block_height_index_pk",
           "columns": [
             "block_height",
             "index"
@@ -201,6 +229,20 @@
           "type": "varchar",
           "primaryKey": true,
           "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "current_timestamp"
         },
         "transaction_signature": {
           "name": "transaction_signature",
@@ -265,8 +307,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.status": {
-      "name": "status",
+    "public.statuses": {
+      "name": "statuses",
       "schema": "",
       "columns": {
         "id": {
@@ -294,6 +336,20 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "current_timestamp"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "current_timestamp"
         }
       },
       "indexes": {},
