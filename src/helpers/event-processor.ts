@@ -64,7 +64,6 @@ export function processEventData(
         userWalletAddress: claimedEvent.predictor,
         predictionAccount: claimedEvent.predictionAccount,
         amount: BigInt(claimedEvent.amount.toString()),
-        rewardId: undefined,
       };
 
       claimedEvents.push(claimedEventEntity);
