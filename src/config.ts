@@ -1,9 +1,12 @@
+import { config as dotenvConfig } from 'dotenv';
 import { DataSourceBuilder } from '@subsquid/solana-stream';
 
 import { programId } from './abi/trepa';
 
-export const START_BLOCK_HEIGHT = 420_584_500;
-export const PORTAL_URL = 'https://portal.sqd.dev/datasets/solana-devnet';
+dotenvConfig();
+
+export const START_BLOCK_HEIGHT = Number(process.env.START_BLOCK_HEIGHT!);
+export const PORTAL_URL = process.env.PORTAL_URL!;
 export const TREPA_PROGRAM_ID = programId;
 
 export const dataSource = new DataSourceBuilder()
