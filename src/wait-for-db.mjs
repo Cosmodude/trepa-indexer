@@ -5,14 +5,14 @@ dotenv.config();
 
 const { Client } = pg;
 
-const url = process.env.DB_URL;
+const url = process.env.DATABASE_URL;
 if (!url) {
-  console.error('DB_URL is not set');
+  console.error('DATABASE_URL is not set');
   process.exit(1);
 }
 
-const timeoutMs = parseInt(process.env.DB_TIMEOUT_MS || '60000');
-const pollIntervalMs = parseInt(process.env.DB_POLL_INTERVAL_MS || '2000');
+const timeoutMs = parseInt(process.env.DATABASE_TIMEOUT_MS || '60000');
+const pollIntervalMs = parseInt(process.env.DATABASE_POLL_INTERVAL_MS || '2000');
 const until = Date.now() + timeoutMs;
 let attempts = 0;
 

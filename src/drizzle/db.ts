@@ -1,5 +1,8 @@
+import { config as dotenvConfig } from 'dotenv';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+
+dotenvConfig();
 
 import * as schema from './schema';
 
@@ -8,8 +11,14 @@ let dbInstance: ReturnType<typeof drizzle> | null = null;
 
 function getPool() {
   if (!pool) {
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error(
+        'DATABASE_URL environment variable is not set. Please create a .env file with DATABASE_URL=postgresql://postgres:password@localhost:5433/postgres',
+      );
+    }
     pool = new Pool({
-      connectionString: process.env.DB_URL,
+      connectionString,
       ssl: false,
     });
   }

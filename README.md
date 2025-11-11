@@ -9,8 +9,11 @@
 npm install
 npm run build
 
+# Create db container
+npm run db:up
+
 # Apply database migrations to create the target schema
-node src/wait-for-db.mjs && npm run migrate
+npm run db:apply
 
 # Run indexer
 npm run start
