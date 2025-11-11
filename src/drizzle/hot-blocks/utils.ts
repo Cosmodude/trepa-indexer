@@ -13,11 +13,15 @@ export function assertChainContinuity(
   chain: HashAndHeight[],
 ) {
   if (chain.length && chain[0].height <= base.height) {
-    throw new Error('first block must be > base');
+    throw new Error(
+      `First block height ${chain[0].height} must be greater than base height ${base.height}`,
+    );
   }
   for (let i = 1; i < chain.length; i++) {
     if (chain[i].height <= chain[i - 1].height) {
-      throw new Error('blocks must be strictly increasing');
+      throw new Error(
+        `Block heights must be strictly increasing: block[${i}].height (${chain[i].height}) must be greater than block[${i - 1}].height (${chain[i - 1].height})`,
+      );
     }
   }
 }
