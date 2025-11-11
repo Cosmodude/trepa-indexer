@@ -1,103 +1,34 @@
 import assert from 'assert';
-import { eq, lt, and, sql } from 'drizzle-orm';
+import { gte, sql } from 'drizzle-orm';
 
 import { START_BLOCK_HEIGHT } from '../config';
+import {
+  insertRecords,
+  upsertRecords,
+  updateRecords,
+  deleteRecords,
+} from './crud-operations';
 import { db } from './db';
 import {
-  predictions,
-  claims,
-  hotBlock,
-  hotChangeLog,
-  status,
-  type NewPrediction,
-  type NewClaim,
-  type NewHotChangeLog,
-} from './schema';
+  insertHotBlock,
+  deleteHotBlocks,
+  updateStatus,
+  applyRollbackChange,
+  rollbackBlock,
+  last,
+  maybeLast,
+  assertChainContinuity,
+  RACE_MSG,
+  ChangeTracker,
+  type HashAndHeight,
+  type DatabaseState,
+  type HotTxInfo,
+  type DBChange,
+} from './hot-blocks';
+import { hotBlock, hotChangeLog, status } from './schema';
+import { performUpdates } from './store-factory';
 
-export type HashAndHeight = { height: number; hash: string };
-export type DatabaseState = HashAndHeight & {
-  nonce: number;
-  top: HashAndHeight[];
-};
-export type HotTxInfo = {
-  baseHead: HashAndHeight;
-  finalizedHead: HashAndHeight;
-  newBlocks: HashAndHeight[];
-};
-
-interface DBChange {
-  type: 'insert' | 'update' | 'delete';
-  table: string;
-  entity: any;
-  key?: any;
-}
-
-export class ChangeTracker {
-  constructor(
-    public tx: any,
-    public schema: string,
-    public blockHeight: number,
-  ) {}
-
-  private changes: DBChange[] = [];
-
-  async recordInsert(table: string, entity: any): Promise<void> {
-    this.changes.push({
-      type: 'insert',
-      table,
-      entity,
-    });
-  }
-
-  async recordUpdate(table: string, entity: any, key: any): Promise<void> {
-    this.changes.push({
-      type: 'update',
-      table,
-      entity,
-      key,
-    });
-  }
-
-  async recordDelete(table: string, key: any): Promise<void> {
-    this.changes.push({
-      type: 'delete',
-      table,
-      entity: null,
-      key,
-    });
-  }
-
-  async persist(): Promise<void> {
-    const changeLogs: NewHotChangeLog[] = this.changes.map((change, idx) => ({
-      blockHeight: this.blockHeight,
-      index: idx,
-      change: change as any,
-    }));
-
-    if (changeLogs.length > 0) {
-      await this.tx.insert(hotChangeLog).values(changeLogs);
-    }
-  }
-}
-
-const RACE_MSG =
-  'status table was updated by foreign process, make sure no other processor is running';
-
-function last<T>(arr: T[]): T | undefined {
-  return arr.length ? arr[arr.length - 1] : undefined;
-}
-
-function maybeLast<T>(arr?: T[]): T | undefined {
-  return arr ? last(arr) : undefined;
-}
-
-function assertChainContinuity(base: HashAndHeight, chain: HashAndHeight[]) {
-  let prev = base;
-  for (const b of chain) {
-    assert(b.height === prev.height + 1, 'blocks must form a continues chain');
-    prev = b;
-  }
-}
+export type { HashAndHeight, DatabaseState, HotTxInfo } from './hot-blocks';
 
 export class DrizzleDatabase {
   public supportsHotBlocks = true;
@@ -122,58 +53,19 @@ export class DrizzleDatabase {
   }
 
   async insert(records: any[]): Promise<void> {
-    if (records.length === 0) return;
-
-    const predictedEvents: NewPrediction[] = [];
-    const claimedEvents: NewClaim[] = [];
-
-    for (const record of records) {
-      if (record instanceof Object && 'stake' in record) {
-        predictedEvents.push(record as NewPrediction);
-      } else if (record instanceof Object && 'amount' in record) {
-        claimedEvents.push(record as NewClaim);
-      }
-    }
-
-    if (predictedEvents.length > 0) {
-      await db.insert(predictions).values(predictedEvents);
-    }
-    if (claimedEvents.length > 0) {
-      await db.insert(claims).values(claimedEvents);
-    }
+    return insertRecords(db, records);
   }
 
   async upsert(records: any[]): Promise<void> {
-    if (records.length === 0) return;
-
-    const predictedEvents: NewPrediction[] = [];
-    const claimedEvents: NewClaim[] = [];
-
-    for (const record of records) {
-      if (record instanceof Object && 'stake' in record) {
-        predictedEvents.push(record as NewPrediction);
-      } else if (record instanceof Object && 'amount' in record) {
-        claimedEvents.push(record as NewClaim);
-      }
-    }
-
-    if (predictedEvents.length > 0) {
-      await db
-        .insert(predictions)
-        .values(predictedEvents)
-        .onConflictDoNothing();
-    }
-    if (claimedEvents.length > 0) {
-      await db.insert(claims).values(claimedEvents).onConflictDoNothing();
-    }
+    return upsertRecords(db, records);
   }
 
-  async update(_records: any[]): Promise<void> {
-    throw new Error('Update not implemented yet');
+  async update(records: any[]): Promise<void> {
+    return updateRecords(db, records);
   }
 
-  async delete(_records: any[]): Promise<void> {
-    throw new Error('Delete not implemented yet');
+  async delete(records: any[]): Promise<void> {
+    return deleteRecords(db, records);
   }
 
   async transact(info: any, cb: (store: any) => Promise<void>): Promise<void> {
@@ -216,25 +108,43 @@ export class DrizzleDatabase {
       if (!(chain[0].height <= info.finalizedHead.height))
         throw new Error(RACE_MSG);
 
-      const rollbackPos = info.baseHead.height + 1 - chain[0].height;
+      const cutoff = info.baseHead.height + 1;
+      const logs = await tx
+        .select()
+        .from(hotChangeLog)
+        .where(gte(hotChangeLog.blockHeight, cutoff))
+        .orderBy(
+          sql`${hotChangeLog.blockHeight} DESC, ${hotChangeLog.index} DESC`,
+        );
 
-      for (let i = chain.length - 1; i >= rollbackPos; i--) {
-        await this.rollbackBlock(this.getStatusSchema(), tx, chain[i].height);
+      for (const changeLog of logs) {
+        await applyRollbackChange(tx, changeLog.change as DBChange);
+      }
+
+      if (logs.length > 0) {
+        await tx
+          .delete(hotChangeLog)
+          .where(gte(hotChangeLog.blockHeight, cutoff));
+        await tx.delete(hotBlock).where(gte(hotBlock.height, cutoff));
       }
 
       if (info.newBlocks.length) {
-        let finalizedEnd =
-          info.finalizedHead.height - info.newBlocks[0].height + 1;
+        let finalizedEnd = 0;
+        while (
+          finalizedEnd < info.newBlocks.length &&
+          info.newBlocks[finalizedEnd].height <= info.finalizedHead.height
+        ) {
+          finalizedEnd++;
+        }
+
         if (finalizedEnd > 0) {
-          await this.performUpdates((store) => cb(store, 0, finalizedEnd), tx);
-        } else {
-          finalizedEnd = 0;
+          await performUpdates((store) => cb(store, 0, finalizedEnd), tx);
         }
 
         for (let i = finalizedEnd; i < info.newBlocks.length; i++) {
           const b = info.newBlocks[i];
-          await this.insertHotBlock(tx, b);
-          await this.performUpdates(
+          await insertHotBlock(tx, b);
+          await performUpdates(
             (store) => cb(store, i, i + 1),
             tx,
             new ChangeTracker(tx, this.getStatusSchema(), b.height),
@@ -242,15 +152,30 @@ export class DrizzleDatabase {
         }
       }
 
-      chain = chain.slice(0, rollbackPos).concat(info.newBlocks);
-      const finalizedHeadPos = info.finalizedHead.height - chain[0].height;
+      chain = chain.filter((b) => b.height < cutoff).concat(info.newBlocks);
 
-      if (chain[finalizedHeadPos].hash !== info.finalizedHead.hash) {
-        throw new Error('finalized head mismatch');
+      if (chain.length === 0) {
+        throw new Error('Chain is empty after processing');
       }
 
-      await this.deleteHotBlocks(tx, info.finalizedHead.height);
-      await this.updateStatus(tx, state.nonce, info.finalizedHead);
+      let finalizedHeadPos = -1;
+      for (let i = chain.length - 1; i >= 0; i--) {
+        if (chain[i].height <= info.finalizedHead.height) {
+          finalizedHeadPos = i;
+          break;
+        }
+      }
+
+      if (finalizedHeadPos === -1) {
+        throw new Error(
+          `No block found at or before finalized head height ${info.finalizedHead.height} in chain (chain heights: ${chain[0]?.height} to ${chain[chain.length - 1]?.height}, length: ${chain.length})`,
+        );
+      }
+
+      const actualFinalizedHead = chain[finalizedHeadPos];
+
+      await deleteHotBlocks(tx, actualFinalizedHead.height);
+      await updateStatus(tx, state.nonce, actualFinalizedHead);
     });
   }
 
@@ -303,159 +228,11 @@ export class DrizzleDatabase {
     };
   }
 
-  async performUpdates(
-    cb: (store: any) => Promise<void>,
-    tx: any,
-    changeTracker?: ChangeTracker,
-  ): Promise<void> {
-    const running = { value: true };
-    const store = {
-      insert: async (records: any[]) => {
-        if (!running.value) throw new Error('too late to perform db updates');
-
-        if (records.length === 0) return;
-
-        const predictedEvents: NewPrediction[] = [];
-        const claimedEvents: NewClaim[] = [];
-
-        for (const record of records) {
-          if (record instanceof Object && 'stake' in record) {
-            predictedEvents.push(record as NewPrediction);
-            if (changeTracker) {
-              await changeTracker.recordInsert('predictions', record);
-            }
-          } else if (record instanceof Object && 'amount' in record) {
-            claimedEvents.push(record as NewClaim);
-            if (changeTracker) {
-              await changeTracker.recordInsert('claims', record);
-            }
-          }
-        }
-
-        if (predictedEvents.length > 0) {
-          await tx.insert(predictions).values(predictedEvents);
-        }
-        if (claimedEvents.length > 0) {
-          await tx.insert(claims).values(claimedEvents);
-        }
-      },
-      upsert: async (records: any[]) => {
-        if (!running.value) throw new Error('too late to perform db updates');
-
-        if (records.length === 0) return;
-
-        const predictedEvents: NewPrediction[] = [];
-        const claimedEvents: NewClaim[] = [];
-
-        for (const record of records) {
-          if (record instanceof Object && 'stake' in record) {
-            predictedEvents.push(record as NewPrediction);
-            if (changeTracker) {
-              await changeTracker.recordInsert('predictions', record);
-            }
-          } else if (record instanceof Object && 'amount' in record) {
-            claimedEvents.push(record as NewClaim);
-            if (changeTracker) {
-              await changeTracker.recordInsert('claims', record);
-            }
-          }
-        }
-
-        if (predictedEvents.length > 0) {
-          await tx
-            .insert(predictions)
-            .values(predictedEvents)
-            .onConflictDoNothing();
-        }
-        if (claimedEvents.length > 0) {
-          await tx.insert(claims).values(claimedEvents).onConflictDoNothing();
-        }
-      },
-      update: async (_records: any[]) => {
-        if (!running.value) throw new Error('too late to perform db updates');
-        throw new Error('Update not implemented yet');
-      },
-      delete: async (_records: any[]) => {
-        if (!running.value) throw new Error('too late to perform db updates');
-        throw new Error('Delete not implemented yet');
-      },
-    };
-
-    try {
-      await cb(store);
-      if (changeTracker) {
-        await changeTracker.persist();
-      }
-    } finally {
-      running.value = false;
-    }
-  }
-
-  async insertHotBlock(tx: any, block: HashAndHeight): Promise<void> {
-    await tx
-      .insert(hotBlock)
-      .values({
-        height: block.height,
-        hash: block.hash,
-      })
-      .onConflictDoNothing();
-  }
-
-  async deleteHotBlocks(tx: any, finalizedHeight: number): Promise<void> {
-    await tx.delete(hotBlock).where(lt(hotBlock.height, finalizedHeight));
-  }
-
-  async updateStatus(
-    tx: any,
-    nonce: number,
-    next: HashAndHeight,
-  ): Promise<void> {
-    const result = await tx
-      .update(status)
-      .set({
-        height: next.height,
-        hash: next.hash,
-        nonce: nonce + 1,
-      })
-      .where(and(eq(status.id, 0), eq(status.nonce, nonce)))
-      .returning();
-
-    if (result.length === 0) {
-      throw new Error(RACE_MSG);
-    }
-  }
-
   async rollbackBlock(
     schema: string,
     tx: any,
     blockHeight: number,
   ): Promise<void> {
-    const changes = await tx
-      .select()
-      .from(hotChangeLog)
-      .where(eq(hotChangeLog.blockHeight, blockHeight))
-      .orderBy(sql`${hotChangeLog.index} DESC`);
-
-    for (const changeLog of changes) {
-      const change = changeLog.change as DBChange;
-
-      switch (change.type) {
-        case 'insert':
-          if (change.table === 'predictions') {
-            await tx
-              .delete(predictions)
-              .where(eq(predictions.id, change.entity.id));
-          } else if (change.table === 'claims') {
-            await tx.delete(claims).where(eq(claims.id, change.entity.id));
-          }
-          break;
-        case 'update':
-          break;
-        case 'delete':
-          break;
-      }
-    }
-
-    await tx.delete(hotBlock).where(eq(hotBlock.height, blockHeight));
+    await rollbackBlock(tx, blockHeight);
   }
 }
