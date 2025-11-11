@@ -1,4 +1,5 @@
 import type { NewPrediction, NewClaim } from './schema';
+import { isPredictionRecord, isClaimRecord } from './type-guards';
 
 export interface ClassifiedRecords {
   predictedEvents: NewPrediction[];
@@ -10,10 +11,10 @@ export function classifyRecords(records: any[]): ClassifiedRecords {
   const claimedEvents: NewClaim[] = [];
 
   for (const record of records) {
-    if (record instanceof Object && 'stake' in record) {
-      predictedEvents.push(record as NewPrediction);
-    } else if (record instanceof Object && 'amount' in record) {
-      claimedEvents.push(record as NewClaim);
+    if (isPredictionRecord(record)) {
+      predictedEvents.push(record);
+    } else if (isClaimRecord(record)) {
+      claimedEvents.push(record);
     }
   }
 

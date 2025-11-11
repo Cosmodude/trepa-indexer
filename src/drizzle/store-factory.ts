@@ -7,6 +7,7 @@ import {
   type NewPrediction,
   type NewClaim,
 } from './schema';
+import { isPredictionRecord, isClaimRecord } from './type-guards';
 
 export function createStore(
   tx: any,
@@ -29,13 +30,13 @@ export function createStore(
       const claimedEvents: NewClaim[] = [];
 
       for (const record of records) {
-        if (record instanceof Object && 'stake' in record) {
-          predictedEvents.push(record as NewPrediction);
+        if (isPredictionRecord(record)) {
+          predictedEvents.push(record);
           if (changeTracker) {
             await changeTracker.recordInsert('predictions', record);
           }
-        } else if (record instanceof Object && 'amount' in record) {
-          claimedEvents.push(record as NewClaim);
+        } else if (isClaimRecord(record)) {
+          claimedEvents.push(record);
           if (changeTracker) {
             await changeTracker.recordInsert('claims', record);
           }
@@ -58,10 +59,10 @@ export function createStore(
       const claimedEvents: NewClaim[] = [];
 
       for (const record of records) {
-        if (record instanceof Object && 'stake' in record) {
-          predictedEvents.push(record as NewPrediction);
-        } else if (record instanceof Object && 'amount' in record) {
-          claimedEvents.push(record as NewClaim);
+        if (isPredictionRecord(record)) {
+          predictedEvents.push(record);
+        } else if (isClaimRecord(record)) {
+          claimedEvents.push(record);
         }
       }
 
@@ -106,7 +107,7 @@ export function createStore(
       if (records.length === 0) return;
 
       for (const record of records) {
-        if (record instanceof Object && 'stake' in record) {
+        if (isPredictionRecord(record)) {
           const oldEntity = await tx
             .select()
             .from(predictions)
@@ -126,7 +127,7 @@ export function createStore(
               { id: record.id },
             );
           }
-        } else if (record instanceof Object && 'amount' in record) {
+        } else if (isClaimRecord(record) && record.id) {
           const oldEntity = await tx
             .select()
             .from(claims)
@@ -149,7 +150,7 @@ export function createStore(
       if (records.length === 0) return;
 
       for (const record of records) {
-        if (record instanceof Object && 'stake' in record) {
+        if (isPredictionRecord(record)) {
           const oldEntity = await tx
             .select()
             .from(predictions)
@@ -163,7 +164,7 @@ export function createStore(
               id: record.id,
             });
           }
-        } else if (record instanceof Object && 'amount' in record) {
+        } else if (isClaimRecord(record) && record.id) {
           const oldEntity = await tx
             .select()
             .from(claims)
