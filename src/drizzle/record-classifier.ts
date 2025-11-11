@@ -1,3 +1,4 @@
+import type { DatabaseRecord } from './database-types';
 import type { NewPrediction, NewClaim } from './schema';
 import { isPredictionRecord, isClaimRecord } from './type-guards';
 
@@ -6,7 +7,7 @@ export interface ClassifiedRecords {
   claimedEvents: NewClaim[];
 }
 
-export function classifyRecords(records: any[]): ClassifiedRecords {
+export function classifyRecords(records: DatabaseRecord[]): ClassifiedRecords {
   const predictedEvents: NewPrediction[] = [];
   const claimedEvents: NewClaim[] = [];
 

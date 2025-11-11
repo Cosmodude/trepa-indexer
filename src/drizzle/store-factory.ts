@@ -1,5 +1,11 @@
 import { eq } from 'drizzle-orm';
 
+import type {
+  DatabaseTransaction,
+  DatabaseRecord,
+  Store,
+  StoreCallback,
+} from './database-types';
 import { ChangeTracker } from './hot-blocks';
 import {
   predictions,
@@ -10,18 +16,13 @@ import {
 import { isPredictionRecord, isClaimRecord } from './type-guards';
 
 export function createStore(
-  tx: any,
+  tx: DatabaseTransaction,
   changeTracker?: ChangeTracker,
-): {
-  insert: (records: any[]) => Promise<void>;
-  upsert: (records: any[]) => Promise<void>;
-  update: (records: any[]) => Promise<void>;
-  delete: (records: any[]) => Promise<void>;
-} {
+): Store {
   const running = { value: true };
 
   return {
-    insert: async (records: any[]) => {
+    insert: async (records: DatabaseRecord[]) => {
       if (!running.value) throw new Error('too late to perform db updates');
 
       if (records.length === 0) return;
@@ -50,7 +51,7 @@ export function createStore(
         await tx.insert(claims).values(claimedEvents);
       }
     },
-    upsert: async (records: any[]) => {
+    upsert: async (records: DatabaseRecord[]) => {
       if (!running.value) throw new Error('too late to perform db updates');
 
       if (records.length === 0) return;
@@ -101,7 +102,7 @@ export function createStore(
         }
       }
     },
-    update: async (records: any[]) => {
+    update: async (records: DatabaseRecord[]) => {
       if (!running.value) throw new Error('too late to perform db updates');
 
       if (records.length === 0) return;
@@ -144,7 +145,7 @@ export function createStore(
         }
       }
     },
-    delete: async (records: any[]) => {
+    delete: async (records: DatabaseRecord[]) => {
       if (!running.value) throw new Error('too late to perform db updates');
 
       if (records.length === 0) return;
@@ -185,8 +186,8 @@ export function createStore(
 }
 
 export async function performUpdates(
-  cb: (store: any) => Promise<void>,
-  tx: any,
+  cb: StoreCallback,
+  tx: DatabaseTransaction,
   changeTracker?: ChangeTracker,
 ): Promise<void> {
   const store = createStore(tx, changeTracker);

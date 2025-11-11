@@ -1,9 +1,10 @@
+import type { DatabaseTransaction } from '../database-types';
 import { hotChangeLog, type NewHotChangeLog } from '../schema';
 import type { DBChange } from './types';
 
 export class ChangeTracker {
   constructor(
-    public tx: any,
+    public tx: DatabaseTransaction,
     public schema: string,
     public blockHeight: number,
   ) {}

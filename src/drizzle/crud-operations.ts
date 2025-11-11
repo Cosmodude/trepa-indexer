@@ -1,9 +1,13 @@
 import { eq } from 'drizzle-orm';
 
+import type { DatabaseTransaction, DatabaseRecord } from './database-types';
 import { classifyRecords } from './record-classifier';
 import { predictions, claims } from './schema';
 
-export async function insertRecords(db: any, records: any[]): Promise<void> {
+export async function insertRecords(
+  db: DatabaseTransaction,
+  records: DatabaseRecord[],
+): Promise<void> {
   if (records.length === 0) return;
 
   const { predictedEvents, claimedEvents } = classifyRecords(records);
@@ -16,7 +20,10 @@ export async function insertRecords(db: any, records: any[]): Promise<void> {
   }
 }
 
-export async function upsertRecords(db: any, records: any[]): Promise<void> {
+export async function upsertRecords(
+  db: DatabaseTransaction,
+  records: DatabaseRecord[],
+): Promise<void> {
   if (records.length === 0) return;
 
   const { predictedEvents, claimedEvents } = classifyRecords(records);
@@ -29,7 +36,10 @@ export async function upsertRecords(db: any, records: any[]): Promise<void> {
   }
 }
 
-export async function updateRecords(db: any, records: any[]): Promise<void> {
+export async function updateRecords(
+  db: DatabaseTransaction,
+  records: DatabaseRecord[],
+): Promise<void> {
   if (records.length === 0) return;
 
   const { predictedEvents, claimedEvents } = classifyRecords(records);
@@ -44,7 +54,10 @@ export async function updateRecords(db: any, records: any[]): Promise<void> {
   }
 }
 
-export async function deleteRecords(db: any, records: any[]): Promise<void> {
+export async function deleteRecords(
+  db: DatabaseTransaction,
+  records: DatabaseRecord[],
+): Promise<void> {
   if (records.length === 0) return;
 
   const { predictedEvents, claimedEvents } = classifyRecords(records);

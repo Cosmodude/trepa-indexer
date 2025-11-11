@@ -1,10 +1,11 @@
 import { eq, sql } from 'drizzle-orm';
 
+import type { DatabaseTransaction } from '../database-types';
 import { predictions, claims, hotChangeLog, hotBlock } from '../schema';
 import type { DBChange } from './types';
 
 export async function applyRollbackChange(
-  tx: any,
+  tx: DatabaseTransaction,
   change: DBChange,
 ): Promise<void> {
   switch (change.type) {
@@ -48,7 +49,7 @@ export async function applyRollbackChange(
 }
 
 export async function rollbackBlock(
-  tx: any,
+  tx: DatabaseTransaction,
   blockHeight: number,
 ): Promise<void> {
   const changes = await tx

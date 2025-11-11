@@ -1,11 +1,12 @@
 import { lte, eq, and } from 'drizzle-orm';
 
+import type { DatabaseTransaction } from '../database-types';
 import { hotBlock, status } from '../schema';
 import type { HashAndHeight } from './types';
 import { RACE_MSG } from './utils';
 
 export async function insertHotBlock(
-  tx: any,
+  tx: DatabaseTransaction,
   block: HashAndHeight,
 ): Promise<void> {
   await tx
@@ -18,14 +19,14 @@ export async function insertHotBlock(
 }
 
 export async function deleteHotBlocks(
-  tx: any,
+  tx: DatabaseTransaction,
   finalizedHeight: number,
 ): Promise<void> {
   await tx.delete(hotBlock).where(lte(hotBlock.height, finalizedHeight));
 }
 
 export async function updateStatus(
-  tx: any,
+  tx: DatabaseTransaction,
   nonce: number,
   next: HashAndHeight,
 ): Promise<void> {

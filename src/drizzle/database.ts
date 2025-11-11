@@ -8,6 +8,12 @@ import {
   updateRecords,
   deleteRecords,
 } from './crud-operations';
+import type {
+  DatabaseTransaction,
+  DatabaseRecord,
+  StoreCallback,
+  TransactionInfo,
+} from './database-types';
 import { db } from './db';
 import {
   insertHotBlock,
@@ -52,29 +58,32 @@ export class DrizzleDatabase {
     }
   }
 
-  async insert(records: any[]): Promise<void> {
-    return insertRecords(db, records);
+  async insert(records: DatabaseRecord[]): Promise<void> {
+    return insertRecords(db as DatabaseTransaction, records);
   }
 
-  async upsert(records: any[]): Promise<void> {
-    return upsertRecords(db, records);
+  async upsert(records: DatabaseRecord[]): Promise<void> {
+    return upsertRecords(db as DatabaseTransaction, records);
   }
 
-  async update(records: any[]): Promise<void> {
-    return updateRecords(db, records);
+  async update(records: DatabaseRecord[]): Promise<void> {
+    return updateRecords(db as DatabaseTransaction, records);
   }
 
-  async delete(records: any[]): Promise<void> {
-    return deleteRecords(db, records);
+  async delete(records: DatabaseRecord[]): Promise<void> {
+    return deleteRecords(db as DatabaseTransaction, records);
   }
 
-  async transact(info: any, cb: (store: any) => Promise<void>): Promise<void> {
+  async transact(info: TransactionInfo, cb: StoreCallback): Promise<void> {
     await cb(this);
   }
 
   async transactHot(
     info: HotTxInfo,
-    cb: (store: any, block: HashAndHeight) => Promise<void>,
+    cb: (
+      store: ReturnType<typeof import('./store-factory').createStore>,
+      block: HashAndHeight,
+    ) => Promise<void>,
   ): Promise<void> {
     return this.transactHot2(info, async (store, sliceBeg, sliceEnd) => {
       for (let i = sliceBeg; i < sliceEnd; i++) {
@@ -85,9 +94,13 @@ export class DrizzleDatabase {
 
   async transactHot2(
     info: HotTxInfo,
-    cb: (store: any, sliceBeg: number, sliceEnd: number) => Promise<void>,
+    cb: (
+      store: ReturnType<typeof import('./store-factory').createStore>,
+      sliceBeg: number,
+      sliceEnd: number,
+    ) => Promise<void>,
   ): Promise<void> {
-    return this.submit(async (tx) => {
+    return this.submit(async (tx: DatabaseTransaction) => {
       const state = await this.getState(tx);
       let chain = [{ height: state.height, hash: state.hash }, ...state.top];
 
@@ -190,17 +203,22 @@ export class DrizzleDatabase {
     return 'public';
   }
 
-  async submit<T>(fn: (tx: any) => Promise<T>): Promise<T> {
+  async submit<T>(fn: (tx: DatabaseTransaction) => Promise<T>): Promise<T> {
     const maxRetries = 10;
     let attempt = 0;
 
     while (attempt < maxRetries) {
       try {
-        return await db.transaction(async (tx: any) => {
-          return await fn(tx);
+        return await db.transaction(async (tx) => {
+          return await fn(tx as DatabaseTransaction);
         });
-      } catch (error: any) {
-        if (error.code === '40001') {
+      } catch (error: unknown) {
+        if (
+          error &&
+          typeof error === 'object' &&
+          'code' in error &&
+          error.code === '40001'
+        ) {
           attempt++;
           if (attempt >= maxRetries) {
             throw error;
@@ -214,7 +232,7 @@ export class DrizzleDatabase {
     throw new Error('Transaction failed after maximum retries');
   }
 
-  async getState(tx: any): Promise<DatabaseState> {
+  async getState(tx: DatabaseTransaction): Promise<DatabaseState> {
     const statusRow = await tx.select().from(status).limit(1);
     const hotBlocks = await tx.select().from(hotBlock).orderBy(hotBlock.height);
 
@@ -237,7 +255,7 @@ export class DrizzleDatabase {
 
   async rollbackBlock(
     schema: string,
-    tx: any,
+    tx: DatabaseTransaction,
     blockHeight: number,
   ): Promise<void> {
     await rollbackBlock(tx, blockHeight);
