@@ -7,13 +7,8 @@ import type {
   StoreCallback,
 } from './database-types';
 import { ChangeTracker } from './hot-blocks';
-import {
-  predictions,
-  claims,
-  type NewPrediction,
-  type NewClaim,
-} from './schema';
-import { isPredictionRecord, isClaimRecord } from './type-guards';
+import { classifyRecords } from './record-classifier';
+import { predictions, claims } from './schema';
 
 export function createStore(
   tx: DatabaseTransaction,
@@ -27,20 +22,14 @@ export function createStore(
 
       if (records.length === 0) return;
 
-      const predictedEvents: NewPrediction[] = [];
-      const claimedEvents: NewClaim[] = [];
+      const { predictedEvents, claimedEvents } = classifyRecords(records);
 
-      for (const record of records) {
-        if (isPredictionRecord(record)) {
-          predictedEvents.push(record);
-          if (changeTracker) {
-            await changeTracker.recordInsert('predictions', record);
-          }
-        } else if (isClaimRecord(record)) {
-          claimedEvents.push(record);
-          if (changeTracker) {
-            await changeTracker.recordInsert('claims', record);
-          }
+      if (changeTracker) {
+        for (const record of predictedEvents) {
+          await changeTracker.recordInsert('predictions', record);
+        }
+        for (const record of claimedEvents) {
+          await changeTracker.recordInsert('claims', record);
         }
       }
 
@@ -56,16 +45,7 @@ export function createStore(
 
       if (records.length === 0) return;
 
-      const predictedEvents: NewPrediction[] = [];
-      const claimedEvents: NewClaim[] = [];
-
-      for (const record of records) {
-        if (isPredictionRecord(record)) {
-          predictedEvents.push(record);
-        } else if (isClaimRecord(record)) {
-          claimedEvents.push(record);
-        }
-      }
+      const { predictedEvents, claimedEvents } = classifyRecords(records);
 
       if (predictedEvents.length > 0) {
         const insertedPredictions = await tx
@@ -107,8 +87,10 @@ export function createStore(
 
       if (records.length === 0) return;
 
-      for (const record of records) {
-        if (isPredictionRecord(record)) {
+      const { predictedEvents, claimedEvents } = classifyRecords(records);
+
+      for (const record of predictedEvents) {
+        if (record.id) {
           const oldEntity = await tx
             .select()
             .from(predictions)
@@ -128,7 +110,11 @@ export function createStore(
               { id: record.id },
             );
           }
-        } else if (isClaimRecord(record) && record.id) {
+        }
+      }
+
+      for (const record of claimedEvents) {
+        if (record.id) {
           const oldEntity = await tx
             .select()
             .from(claims)
@@ -150,8 +136,10 @@ export function createStore(
 
       if (records.length === 0) return;
 
-      for (const record of records) {
-        if (isPredictionRecord(record)) {
+      const { predictedEvents, claimedEvents } = classifyRecords(records);
+
+      for (const record of predictedEvents) {
+        if (record.id) {
           const oldEntity = await tx
             .select()
             .from(predictions)
@@ -165,7 +153,11 @@ export function createStore(
               id: record.id,
             });
           }
-        } else if (isClaimRecord(record) && record.id) {
+        }
+      }
+
+      for (const record of claimedEvents) {
+        if (record.id) {
           const oldEntity = await tx
             .select()
             .from(claims)
