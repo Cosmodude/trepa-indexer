@@ -1,63 +1,131 @@
 {
-  "id": "9daa75d3-5ba0-43cd-8e52-8382ad803ca3",
+  "id": "5de32a44-cd84-4676-ab10-ee9dfbe923eb",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.claimed_event": {
-      "name": "claimed_event",
+    "public.claims": {
+      "name": "claims",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "varchar",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
-        "transaction_signature": {
-          "name": "transaction_signature",
-          "type": "text",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp with time zone",
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         },
-        "pool_account": {
-          "name": "pool_account",
-          "type": "text",
+        "reward_id": {
+          "name": "reward_id",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "predictor": {
-          "name": "predictor",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pool_token_account": {
-          "name": "pool_token_account",
-          "type": "text",
+        "user_wallet_address": {
+          "name": "user_wallet_address",
+          "type": "varchar(44)",
           "primaryKey": false,
           "notNull": true
         },
         "prediction_account": {
           "name": "prediction_account",
-          "type": "text",
+          "type": "varchar(44)",
           "primaryKey": false,
           "notNull": true
         },
         "amount": {
           "name": "amount",
-          "type": "text",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_claims_prediction_user": {
+          "name": "idx_claims_prediction_user",
+          "columns": [
+            {
+              "expression": "prediction_account",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "user_wallet_address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
-        "proof": {
-          "name": "proof",
+        "idx_claims_user_wallet": {
+          "name": "idx_claims_user_wallet",
+          "columns": [
+            {
+              "expression": "user_wallet_address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_claims_created_at": {
+          "name": "idx_claims_created_at",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.hot_block": {
+      "name": "hot_block",
+      "schema": "",
+      "columns": {
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "hash": {
+          "name": "hash",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -71,8 +139,61 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.pool_created_event": {
-      "name": "pool_created_event",
+    "public.hot_change_log": {
+      "name": "hot_change_log",
+      "schema": "",
+      "columns": {
+        "block_height": {
+          "name": "block_height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "index": {
+          "name": "index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "change": {
+          "name": "change",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "hot_change_log_block_height_hot_block_height_fk": {
+          "name": "hot_change_log_block_height_hot_block_height_fk",
+          "tableFrom": "hot_change_log",
+          "tableTo": "hot_block",
+          "columnsFrom": [
+            "block_height"
+          ],
+          "columnsTo": [
+            "height"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "hot_change_log_block_height_index_pk": {
+          "name": "hot_change_log_block_height_index_pk",
+          "columns": [
+            "block_height",
+            "index"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.predictions": {
+      "name": "predictions",
       "schema": "",
       "columns": {
         "id": {
@@ -89,149 +210,90 @@
         },
         "timestamp": {
           "name": "timestamp",
-          "type": "timestamp with time zone",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
         "pool_account": {
           "name": "pool_account",
-          "type": "text",
+          "type": "varchar(44)",
           "primaryKey": false,
           "notNull": true
         },
-        "question_id": {
-          "name": "question_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "prediction_end_time": {
-          "name": "prediction_end_time",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "bump": {
-          "name": "bump",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.pool_finalized_event": {
-      "name": "pool_finalized_event",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "transaction_signature": {
-          "name": "transaction_signature",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pool_account": {
-          "name": "pool_account",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "merkle_root": {
-          "name": "merkle_root",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "protocol_fee": {
-          "name": "protocol_fee",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.predicted_event": {
-      "name": "predicted_event",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "transaction_signature": {
-          "name": "transaction_signature",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pool_account": {
-          "name": "pool_account",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "predictor": {
-          "name": "predictor",
-          "type": "text",
+        "predictor_account": {
+          "name": "predictor_account",
+          "type": "varchar(44)",
           "primaryKey": false,
           "notNull": true
         },
         "pool_token_account": {
           "name": "pool_token_account",
-          "type": "text",
+          "type": "varchar(44)",
           "primaryKey": false,
           "notNull": true
         },
         "prediction_account": {
           "name": "prediction_account",
-          "type": "text",
+          "type": "varchar(44)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prediction": {
+          "name": "prediction",
+          "type": "numeric(25, 6)",
           "primaryKey": false,
           "notNull": true
         },
         "stake": {
           "name": "stake",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_fee_payer": {
+          "name": "is_fee_payer",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.status": {
+      "name": "status",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "default": 0
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hash": {
+          "name": "hash",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "fee_payer": {
-          "name": "fee_payer",
-          "type": "text",
+        "nonce": {
+          "name": "nonce",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": 0
         }
       },
       "indexes": {},
