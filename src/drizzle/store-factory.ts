@@ -91,42 +91,53 @@ export function createStore(
 
       for (const record of predictedEvents) {
         if (record.id) {
-          const oldEntity = await tx
-            .select()
-            .from(predictions)
-            .where(eq(predictions.id, record.id))
-            .limit(1);
+          if (changeTracker) {
+            const oldEntity = await tx
+              .select()
+              .from(predictions)
+              .where(eq(predictions.id, record.id))
+              .limit(1);
 
-          await tx
-            .update(predictions)
-            .set(record)
-            .where(eq(predictions.id, record.id));
+            await tx
+              .update(predictions)
+              .set(record)
+              .where(eq(predictions.id, record.id));
 
-          if (changeTracker && oldEntity.length > 0) {
-            await changeTracker.recordUpdate(
-              'predictions',
-              record,
-              oldEntity[0],
-              { id: record.id },
-            );
+            if (oldEntity.length > 0) {
+              await changeTracker.recordUpdate(
+                'predictions',
+                record,
+                oldEntity[0],
+                { id: record.id },
+              );
+            }
+          } else {
+            await tx
+              .update(predictions)
+              .set(record)
+              .where(eq(predictions.id, record.id));
           }
         }
       }
 
       for (const record of claimedEvents) {
         if (record.id) {
-          const oldEntity = await tx
-            .select()
-            .from(claims)
-            .where(eq(claims.id, record.id))
-            .limit(1);
+          if (changeTracker) {
+            const oldEntity = await tx
+              .select()
+              .from(claims)
+              .where(eq(claims.id, record.id))
+              .limit(1);
 
-          await tx.update(claims).set(record).where(eq(claims.id, record.id));
+            await tx.update(claims).set(record).where(eq(claims.id, record.id));
 
-          if (changeTracker && oldEntity.length > 0) {
-            await changeTracker.recordUpdate('claims', record, oldEntity[0], {
-              id: record.id,
-            });
+            if (oldEntity.length > 0) {
+              await changeTracker.recordUpdate('claims', record, oldEntity[0], {
+                id: record.id,
+              });
+            }
+          } else {
+            await tx.update(claims).set(record).where(eq(claims.id, record.id));
           }
         }
       }
@@ -140,36 +151,44 @@ export function createStore(
 
       for (const record of predictedEvents) {
         if (record.id) {
-          const oldEntity = await tx
-            .select()
-            .from(predictions)
-            .where(eq(predictions.id, record.id))
-            .limit(1);
+          if (changeTracker) {
+            const oldEntity = await tx
+              .select()
+              .from(predictions)
+              .where(eq(predictions.id, record.id))
+              .limit(1);
 
-          await tx.delete(predictions).where(eq(predictions.id, record.id));
+            await tx.delete(predictions).where(eq(predictions.id, record.id));
 
-          if (changeTracker && oldEntity.length > 0) {
-            await changeTracker.recordDelete('predictions', oldEntity[0], {
-              id: record.id,
-            });
+            if (oldEntity.length > 0) {
+              await changeTracker.recordDelete('predictions', oldEntity[0], {
+                id: record.id,
+              });
+            }
+          } else {
+            await tx.delete(predictions).where(eq(predictions.id, record.id));
           }
         }
       }
 
       for (const record of claimedEvents) {
         if (record.id) {
-          const oldEntity = await tx
-            .select()
-            .from(claims)
-            .where(eq(claims.id, record.id))
-            .limit(1);
+          if (changeTracker) {
+            const oldEntity = await tx
+              .select()
+              .from(claims)
+              .where(eq(claims.id, record.id))
+              .limit(1);
 
-          await tx.delete(claims).where(eq(claims.id, record.id));
+            await tx.delete(claims).where(eq(claims.id, record.id));
 
-          if (changeTracker && oldEntity.length > 0) {
-            await changeTracker.recordDelete('claims', oldEntity[0], {
-              id: record.id,
-            });
+            if (oldEntity.length > 0) {
+              await changeTracker.recordDelete('claims', oldEntity[0], {
+                id: record.id,
+              });
+            }
+          } else {
+            await tx.delete(claims).where(eq(claims.id, record.id));
           }
         }
       }
