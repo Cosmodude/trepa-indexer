@@ -9,6 +9,9 @@ import {
   uuid,
   index,
   uniqueIndex,
+  integer,
+  jsonb,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 
 export const predictions = pgTable('predictions', {
@@ -49,8 +52,41 @@ export const claims = pgTable(
   ],
 );
 
+export const hotBlock = pgTable('hot_block', {
+  height: integer('height').primaryKey(),
+  hash: text('hash').notNull(),
+});
+
+export const hotChangeLog = pgTable(
+  'hot_change_log',
+  {
+    blockHeight: integer('block_height')
+      .notNull()
+      .references(() => hotBlock.height, { onDelete: 'cascade' }),
+    index: integer('index').notNull(),
+    change: jsonb('change').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.blockHeight, t.index] })],
+);
+
+export const status = pgTable('status', {
+  id: integer('id').primaryKey().default(0),
+  height: integer('height').notNull(),
+  hash: text('hash').notNull(),
+  nonce: integer('nonce').notNull().default(0),
+});
+
 export type Prediction = typeof predictions.$inferSelect;
 export type NewPrediction = typeof predictions.$inferInsert;
 
 export type Claim = typeof claims.$inferSelect;
 export type NewClaim = typeof claims.$inferInsert;
+
+export type HotBlock = typeof hotBlock.$inferSelect;
+export type NewHotBlock = typeof hotBlock.$inferInsert;
+
+export type HotChangeLog = typeof hotChangeLog.$inferSelect;
+export type NewHotChangeLog = typeof hotChangeLog.$inferInsert;
+
+export type Status = typeof status.$inferSelect;
+export type NewStatus = typeof status.$inferInsert;
