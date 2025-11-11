@@ -102,11 +102,18 @@ export class DrizzleDatabase {
       }
 
       if (info.newBlocks.length === 0) {
-        if (last(chain)!.hash !== info.baseHead.hash) throw new Error(RACE_MSG);
+        const chainLast = last(chain);
+        if (!chainLast) {
+          throw new Error('Chain is unexpectedly empty');
+        }
+        if (chainLast.hash !== info.baseHead.hash) {
+          throw new Error(RACE_MSG);
+        }
       }
 
-      if (!(chain[0].height <= info.finalizedHead.height))
+      if (chain.length === 0 || chain[0].height > info.finalizedHead.height) {
         throw new Error(RACE_MSG);
+      }
 
       const cutoff = info.baseHead.height + 1;
       const logs = await tx
