@@ -13,10 +13,10 @@ import { predictions, claims } from './schema';
 export function createStore(
   tx: DatabaseTransaction,
   changeTracker?: ChangeTracker,
-): Store {
+): { store: Store; running: { value: boolean } } {
   const running = { value: true };
 
-  return {
+  const store: Store = {
     insert: async (records: DatabaseRecord[]) => {
       if (!running.value) throw new Error('too late to perform db updates');
 
@@ -175,6 +175,8 @@ export function createStore(
       }
     },
   };
+
+  return { store, running };
 }
 
 export async function performUpdates(
@@ -182,7 +184,7 @@ export async function performUpdates(
   tx: DatabaseTransaction,
   changeTracker?: ChangeTracker,
 ): Promise<void> {
-  const store = createStore(tx, changeTracker);
+  const { store, running } = createStore(tx, changeTracker);
 
   try {
     await cb(store);
@@ -190,6 +192,6 @@ export async function performUpdates(
       await changeTracker.persist();
     }
   } finally {
-    (store as any).running = { value: false };
+    running.value = false;
   }
 }
