@@ -5,7 +5,6 @@ import type { DBChange } from './types';
 export class ChangeTracker {
   constructor(
     public tx: DatabaseTransaction,
-    public schema: string,
     public blockHeight: number,
   ) {}
 

@@ -11,6 +11,7 @@ import {
 import type {
   DatabaseTransaction,
   DatabaseRecord,
+  Store,
   StoreCallback,
   TransactionInfo,
 } from './database-types';
@@ -80,10 +81,7 @@ export class DrizzleDatabase {
 
   async transactHot(
     info: HotTxInfo,
-    cb: (
-      store: ReturnType<typeof import('./store-factory').createStore>,
-      block: HashAndHeight,
-    ) => Promise<void>,
+    cb: (store: Store, block: HashAndHeight) => Promise<void>,
   ): Promise<void> {
     return this.transactHot2(info, async (store, sliceBeg, sliceEnd) => {
       for (let i = sliceBeg; i < sliceEnd; i++) {
@@ -94,11 +92,7 @@ export class DrizzleDatabase {
 
   async transactHot2(
     info: HotTxInfo,
-    cb: (
-      store: ReturnType<typeof import('./store-factory').createStore>,
-      sliceBeg: number,
-      sliceEnd: number,
-    ) => Promise<void>,
+    cb: (store: Store, sliceBeg: number, sliceEnd: number) => Promise<void>,
   ): Promise<void> {
     return this.submit(async (tx: DatabaseTransaction) => {
       const state = await this.getState(tx);
@@ -167,7 +161,7 @@ export class DrizzleDatabase {
           await performUpdates(
             (store) => cb(store, i, i + 1),
             tx,
-            new ChangeTracker(tx, this.getStatusSchema(), b.height),
+            new ChangeTracker(tx, b.height),
           );
         }
       }
@@ -197,10 +191,6 @@ export class DrizzleDatabase {
       await deleteHotBlocks(tx, actualFinalizedHead.height);
       await updateStatus(tx, state.nonce, actualFinalizedHead);
     });
-  }
-
-  private getStatusSchema(): string {
-    return 'public';
   }
 
   async submit<T>(fn: (tx: DatabaseTransaction) => Promise<T>): Promise<T> {
