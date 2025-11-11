@@ -1,5 +1,5 @@
 import type { DatabaseRecord } from './database-types';
-import type { NewPrediction, NewClaim } from './schema';
+import type { NewPrediction, NewClaim } from '../drizzle';
 import { isPredictionRecord, isClaimRecord } from './type-guards';
 
 export interface ClassifiedRecords {

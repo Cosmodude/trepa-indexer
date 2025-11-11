@@ -32,7 +32,7 @@ import {
   type HotTxInfo,
   type DBChange,
 } from './hot-blocks';
-import { hotBlock, hotChangeLog, status } from './schema';
+import { schema } from '../drizzle';
 import { performUpdates } from './store-factory';
 
 export type { HashAndHeight, DatabaseState, HotTxInfo } from './hot-blocks';
@@ -47,10 +47,10 @@ export class DrizzleDatabase {
   }
 
   private async initializeStatus(): Promise<void> {
-    const existingStatus = await db.select().from(status).limit(1);
+    const existingStatus = await db.select().from(schema.statusTable).limit(1);
 
     if (existingStatus.length === 0) {
-      await db.insert(status).values({
+      await db.insert(schema.statusTable).values({
         id: 0,
         height: START_BLOCK_HEIGHT - 1,
         hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
@@ -125,10 +125,10 @@ export class DrizzleDatabase {
       const cutoff = info.baseHead.height + 1;
       const logs = await tx
         .select()
-        .from(hotChangeLog)
-        .where(gte(hotChangeLog.blockHeight, cutoff))
+        .from(schema.hotChangeLogTable)
+        .where(gte(schema.hotChangeLogTable.blockHeight, cutoff))
         .orderBy(
-          sql`${hotChangeLog.blockHeight} DESC, ${hotChangeLog.index} DESC`,
+          sql`${schema.hotChangeLogTable.blockHeight} DESC, ${schema.hotChangeLogTable.index} DESC`,
         );
 
       for (const changeLog of logs) {
@@ -137,9 +137,11 @@ export class DrizzleDatabase {
 
       if (logs.length > 0) {
         await tx
-          .delete(hotChangeLog)
-          .where(gte(hotChangeLog.blockHeight, cutoff));
-        await tx.delete(hotBlock).where(gte(hotBlock.height, cutoff));
+          .delete(schema.hotChangeLogTable)
+          .where(gte(schema.hotChangeLogTable.blockHeight, cutoff));
+        await tx
+          .delete(schema.hotBlockTable)
+          .where(gte(schema.hotBlockTable.height, cutoff));
       }
 
       if (info.newBlocks.length) {
@@ -223,8 +225,11 @@ export class DrizzleDatabase {
   }
 
   async getState(tx: DatabaseTransaction): Promise<DatabaseState> {
-    const statusRow = await tx.select().from(status).limit(1);
-    const hotBlocks = await tx.select().from(hotBlock).orderBy(hotBlock.height);
+    const statusRow = await tx.select().from(schema.statusTable).limit(1);
+    const hotBlocks = await tx
+      .select()
+      .from(schema.hotBlockTable)
+      .orderBy(schema.hotBlockTable.height);
 
     if (statusRow.length === 0) {
       return {

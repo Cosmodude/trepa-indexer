@@ -1,7 +1,7 @@
 import { lte, eq, and } from 'drizzle-orm';
 
 import type { DatabaseTransaction } from '../database-types';
-import { hotBlock, status } from '../schema';
+import { schema } from '../../drizzle';
 import type { HashAndHeight } from './types';
 import { RACE_MSG } from './utils';
 
@@ -10,7 +10,7 @@ export async function insertHotBlock(
   block: HashAndHeight,
 ): Promise<void> {
   await tx
-    .insert(hotBlock)
+    .insert(schema.hotBlockTable)
     .values({
       height: block.height,
       hash: block.hash,
@@ -22,7 +22,9 @@ export async function deleteHotBlocks(
   tx: DatabaseTransaction,
   finalizedHeight: number,
 ): Promise<void> {
-  await tx.delete(hotBlock).where(lte(hotBlock.height, finalizedHeight));
+  await tx
+    .delete(schema.hotBlockTable)
+    .where(lte(schema.hotBlockTable.height, finalizedHeight));
 }
 
 export async function updateStatus(
@@ -31,13 +33,15 @@ export async function updateStatus(
   next: HashAndHeight,
 ): Promise<void> {
   const result = await tx
-    .update(status)
+    .update(schema.statusTable)
     .set({
       height: next.height,
       hash: next.hash,
       nonce: nonce + 1,
     })
-    .where(and(eq(status.id, 0), eq(status.nonce, nonce)))
+    .where(
+      and(eq(schema.statusTable.id, 0), eq(schema.statusTable.nonce, nonce)),
+    )
     .returning();
 
   if (result.length === 0) {

@@ -1,5 +1,5 @@
-import * as trepa from '../abi/trepa';
-import { type NewPrediction, type NewClaim } from '../drizzle/schema';
+import * as trepa from '../../abi/trepa';
+import { type NewPrediction, type NewClaim } from '../../drizzle/db.types';
 
 export interface EventCollections {
   predictedEvents: NewPrediction[];

@@ -5,8 +5,8 @@ import { config as dotenvConfig } from 'dotenv';
 
 import * as trepa from './abi/trepa';
 import { dataSource, PORTAL_URL } from './config';
-import { DrizzleDatabase } from './drizzle/database';
-import { processEventData } from './helpers/event-processor';
+import { processEventData } from './helpers/utils/event-processor';
+import { DrizzleDatabase } from './helpers/database';
 
 dotenvConfig();
 

@@ -1,5 +1,5 @@
 import type { DatabaseTransaction } from '../database-types';
-import { hotChangeLog, type NewHotChangeLog } from '../schema';
+import { NewHotChangeLog, schema } from '../../drizzle';
 import type { DBChange } from './types';
 
 export class ChangeTracker {
@@ -50,7 +50,7 @@ export class ChangeTracker {
     }));
 
     if (changeLogs.length > 0) {
-      await this.tx.insert(hotChangeLog).values(changeLogs);
+      await this.tx.insert(schema.hotChangeLogTable).values(changeLogs);
     }
   }
 }

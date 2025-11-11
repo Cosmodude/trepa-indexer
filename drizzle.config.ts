@@ -4,10 +4,8 @@ import * as path from 'path';
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-console.log(process.env.DATABASE_URL);
-
 export default defineConfig({
-  schema: './src/drizzle/schema.ts',
+  schema: './src/drizzle/schema',
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {

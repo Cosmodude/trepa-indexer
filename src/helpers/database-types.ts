@@ -6,7 +6,14 @@ import type {
 import type { PgTransaction } from 'drizzle-orm/pg-core';
 import type { Pool } from 'pg';
 
-import type * as schema from './schema';
+import { schema } from '../drizzle';
+import type {
+  NewPrediction,
+  NewClaim,
+  NewHotBlock,
+  NewHotChangeLog,
+  NewStatus,
+} from '../drizzle';
 
 export type DatabaseTransaction =
   | PgTransaction<
@@ -17,11 +24,11 @@ export type DatabaseTransaction =
   | (NodePgDatabase<Record<string, unknown>> & { $client: Pool });
 
 export type DatabaseRecord =
-  | schema.NewPrediction
-  | schema.NewClaim
-  | schema.NewHotBlock
-  | schema.NewHotChangeLog
-  | schema.NewStatus;
+  | NewPrediction
+  | NewClaim
+  | NewHotBlock
+  | NewHotChangeLog
+  | NewStatus;
 
 export interface Store {
   insert: (records: DatabaseRecord[]) => Promise<void>;

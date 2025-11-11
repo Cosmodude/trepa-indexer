@@ -4,7 +4,7 @@ import { Pool } from 'pg';
 
 dotenvConfig();
 
-import * as schema from './schema';
+import { schema } from '../drizzle';
 
 let pool: Pool | null = null;
 let dbInstance: ReturnType<typeof drizzle> | null = null;

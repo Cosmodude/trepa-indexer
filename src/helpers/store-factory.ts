@@ -8,7 +8,7 @@ import type {
 } from './database-types';
 import { ChangeTracker } from './hot-blocks';
 import { classifyRecords } from './record-classifier';
-import { predictions, claims } from './schema';
+import { schema } from '../drizzle';
 
 export function createStore(
   tx: DatabaseTransaction,
@@ -34,10 +34,10 @@ export function createStore(
       }
 
       if (predictedEvents.length > 0) {
-        await tx.insert(predictions).values(predictedEvents);
+        await tx.insert(schema.predictionsTable).values(predictedEvents);
       }
       if (claimedEvents.length > 0) {
-        await tx.insert(claims).values(claimedEvents);
+        await tx.insert(schema.claimsTable).values(claimedEvents);
       }
     },
     upsert: async (records: DatabaseRecord[]) => {
@@ -49,10 +49,10 @@ export function createStore(
 
       if (predictedEvents.length > 0) {
         const insertedPredictions = await tx
-          .insert(predictions)
+          .insert(schema.predictionsTable)
           .values(predictedEvents)
           .onConflictDoNothing()
-          .returning({ id: predictions.id });
+          .returning({ id: schema.predictionsTable.id });
 
         if (changeTracker) {
           for (const inserted of insertedPredictions) {
@@ -67,10 +67,10 @@ export function createStore(
       }
       if (claimedEvents.length > 0) {
         const insertedClaims = await tx
-          .insert(claims)
+          .insert(schema.claimsTable)
           .values(claimedEvents)
           .onConflictDoNothing()
-          .returning({ id: claims.id });
+          .returning({ id: schema.claimsTable.id });
 
         if (changeTracker) {
           for (const inserted of insertedClaims) {
@@ -94,14 +94,14 @@ export function createStore(
           if (changeTracker) {
             const oldEntity = await tx
               .select()
-              .from(predictions)
-              .where(eq(predictions.id, record.id))
+              .from(schema.predictionsTable)
+              .where(eq(schema.predictionsTable.id, record.id))
               .limit(1);
 
             await tx
-              .update(predictions)
+              .update(schema.predictionsTable)
               .set(record)
-              .where(eq(predictions.id, record.id));
+              .where(eq(schema.predictionsTable.id, record.id));
 
             if (oldEntity.length > 0) {
               await changeTracker.recordUpdate(
@@ -113,9 +113,9 @@ export function createStore(
             }
           } else {
             await tx
-              .update(predictions)
+              .update(schema.predictionsTable)
               .set(record)
-              .where(eq(predictions.id, record.id));
+              .where(eq(schema.predictionsTable.id, record.id));
           }
         }
       }
@@ -125,11 +125,14 @@ export function createStore(
           if (changeTracker) {
             const oldEntity = await tx
               .select()
-              .from(claims)
-              .where(eq(claims.id, record.id))
+              .from(schema.claimsTable)
+              .where(eq(schema.claimsTable.id, record.id))
               .limit(1);
 
-            await tx.update(claims).set(record).where(eq(claims.id, record.id));
+            await tx
+              .update(schema.claimsTable)
+              .set(record)
+              .where(eq(schema.claimsTable.id, record.id));
 
             if (oldEntity.length > 0) {
               await changeTracker.recordUpdate('claims', record, oldEntity[0], {
@@ -137,7 +140,10 @@ export function createStore(
               });
             }
           } else {
-            await tx.update(claims).set(record).where(eq(claims.id, record.id));
+            await tx
+              .update(schema.claimsTable)
+              .set(record)
+              .where(eq(schema.claimsTable.id, record.id));
           }
         }
       }
@@ -154,11 +160,13 @@ export function createStore(
           if (changeTracker) {
             const oldEntity = await tx
               .select()
-              .from(predictions)
-              .where(eq(predictions.id, record.id))
+              .from(schema.predictionsTable)
+              .where(eq(schema.predictionsTable.id, record.id))
               .limit(1);
 
-            await tx.delete(predictions).where(eq(predictions.id, record.id));
+            await tx
+              .delete(schema.predictionsTable)
+              .where(eq(schema.predictionsTable.id, record.id));
 
             if (oldEntity.length > 0) {
               await changeTracker.recordDelete('predictions', oldEntity[0], {
@@ -166,7 +174,9 @@ export function createStore(
               });
             }
           } else {
-            await tx.delete(predictions).where(eq(predictions.id, record.id));
+            await tx
+              .delete(schema.predictionsTable)
+              .where(eq(schema.predictionsTable.id, record.id));
           }
         }
       }
@@ -176,11 +186,13 @@ export function createStore(
           if (changeTracker) {
             const oldEntity = await tx
               .select()
-              .from(claims)
-              .where(eq(claims.id, record.id))
+              .from(schema.claimsTable)
+              .where(eq(schema.claimsTable.id, record.id))
               .limit(1);
 
-            await tx.delete(claims).where(eq(claims.id, record.id));
+            await tx
+              .delete(schema.claimsTable)
+              .where(eq(schema.claimsTable.id, record.id));
 
             if (oldEntity.length > 0) {
               await changeTracker.recordDelete('claims', oldEntity[0], {
@@ -188,7 +200,9 @@ export function createStore(
               });
             }
           } else {
-            await tx.delete(claims).where(eq(claims.id, record.id));
+            await tx
+              .delete(schema.claimsTable)
+              .where(eq(schema.claimsTable.id, record.id));
           }
         }
       }

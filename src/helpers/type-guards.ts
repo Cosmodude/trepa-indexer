@@ -1,4 +1,4 @@
-import type { NewPrediction, NewClaim } from './schema';
+import type { NewPrediction, NewClaim } from '../drizzle';
 
 export function isPredictionRecord(record: unknown): record is NewPrediction {
   return (

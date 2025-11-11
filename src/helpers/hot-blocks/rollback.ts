@@ -1,7 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
 
 import type { DatabaseTransaction } from '../database-types';
-import { predictions, claims, hotChangeLog, hotBlock } from '../schema';
+import { schema } from '../../drizzle';
 import type { DBChange } from './types';
 
 export async function applyRollbackChange(
@@ -12,24 +12,26 @@ export async function applyRollbackChange(
     case 'insert':
       if (change.table === 'predictions') {
         await tx
-          .delete(predictions)
-          .where(eq(predictions.id, change.entity.id));
+          .delete(schema.predictionsTable)
+          .where(eq(schema.predictionsTable.id, change.entity.id));
       } else if (change.table === 'claims') {
-        await tx.delete(claims).where(eq(claims.id, change.entity.id));
+        await tx
+          .delete(schema.claimsTable)
+          .where(eq(schema.claimsTable.id, change.entity.id));
       }
       break;
     case 'update':
       if (change.oldEntity) {
         if (change.table === 'predictions') {
           await tx
-            .update(predictions)
+            .update(schema.predictionsTable)
             .set(change.oldEntity)
-            .where(eq(predictions.id, change.oldEntity.id));
+            .where(eq(schema.predictionsTable.id, change.oldEntity.id));
         } else if (change.table === 'claims') {
           await tx
-            .update(claims)
+            .update(schema.claimsTable)
             .set(change.oldEntity)
-            .where(eq(claims.id, change.oldEntity.id));
+            .where(eq(schema.claimsTable.id, change.oldEntity.id));
         }
       }
       break;
@@ -37,11 +39,14 @@ export async function applyRollbackChange(
       if (change.entity) {
         if (change.table === 'predictions') {
           await tx
-            .insert(predictions)
+            .insert(schema.predictionsTable)
             .values(change.entity)
             .onConflictDoNothing();
         } else if (change.table === 'claims') {
-          await tx.insert(claims).values(change.entity).onConflictDoNothing();
+          await tx
+            .insert(schema.claimsTable)
+            .values(change.entity)
+            .onConflictDoNothing();
         }
       }
       break;
@@ -54,16 +59,18 @@ export async function rollbackBlock(
 ): Promise<void> {
   const changes = await tx
     .select()
-    .from(hotChangeLog)
-    .where(eq(hotChangeLog.blockHeight, blockHeight))
-    .orderBy(sql`${hotChangeLog.index} DESC`);
+    .from(schema.hotChangeLogTable)
+    .where(eq(schema.hotChangeLogTable.blockHeight, blockHeight))
+    .orderBy(sql`${schema.hotChangeLogTable.index} DESC`);
 
   for (const changeLog of changes) {
     await applyRollbackChange(tx, changeLog.change as DBChange);
   }
 
   await tx
-    .delete(hotChangeLog)
-    .where(eq(hotChangeLog.blockHeight, blockHeight));
-  await tx.delete(hotBlock).where(eq(hotBlock.height, blockHeight));
+    .delete(schema.hotChangeLogTable)
+    .where(eq(schema.hotChangeLogTable.blockHeight, blockHeight));
+  await tx
+    .delete(schema.hotBlockTable)
+    .where(eq(schema.hotBlockTable.height, blockHeight));
 }

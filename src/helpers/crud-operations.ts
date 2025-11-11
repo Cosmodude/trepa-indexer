@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 
 import type { DatabaseTransaction, DatabaseRecord } from './database-types';
 import { classifyRecords } from './record-classifier';
-import { predictions, claims } from './schema';
+import { schema } from '../drizzle';
 
 export async function insertRecords(
   db: DatabaseTransaction,
@@ -13,10 +13,10 @@ export async function insertRecords(
   const { predictedEvents, claimedEvents } = classifyRecords(records);
 
   if (predictedEvents.length > 0) {
-    await db.insert(predictions).values(predictedEvents);
+    await db.insert(schema.predictionsTable).values(predictedEvents);
   }
   if (claimedEvents.length > 0) {
-    await db.insert(claims).values(claimedEvents);
+    await db.insert(schema.claimsTable).values(claimedEvents);
   }
 }
 
@@ -29,10 +29,16 @@ export async function upsertRecords(
   const { predictedEvents, claimedEvents } = classifyRecords(records);
 
   if (predictedEvents.length > 0) {
-    await db.insert(predictions).values(predictedEvents).onConflictDoNothing();
+    await db
+      .insert(schema.predictionsTable)
+      .values(predictedEvents)
+      .onConflictDoNothing();
   }
   if (claimedEvents.length > 0) {
-    await db.insert(claims).values(claimedEvents).onConflictDoNothing();
+    await db
+      .insert(schema.claimsTable)
+      .values(claimedEvents)
+      .onConflictDoNothing();
   }
 }
 
@@ -47,14 +53,17 @@ export async function updateRecords(
   for (const event of predictedEvents) {
     if (event.id) {
       await db
-        .update(predictions)
+        .update(schema.predictionsTable)
         .set(event)
-        .where(eq(predictions.id, event.id));
+        .where(eq(schema.predictionsTable.id, event.id));
     }
   }
   for (const event of claimedEvents) {
     if (event.id) {
-      await db.update(claims).set(event).where(eq(claims.id, event.id));
+      await db
+        .update(schema.claimsTable)
+        .set(event)
+        .where(eq(schema.claimsTable.id, event.id));
     }
   }
 }
@@ -69,12 +78,16 @@ export async function deleteRecords(
 
   for (const event of predictedEvents) {
     if (event.id) {
-      await db.delete(predictions).where(eq(predictions.id, event.id));
+      await db
+        .delete(schema.predictionsTable)
+        .where(eq(schema.predictionsTable.id, event.id));
     }
   }
   for (const event of claimedEvents) {
     if (event.id) {
-      await db.delete(claims).where(eq(claims.id, event.id));
+      await db
+        .delete(schema.claimsTable)
+        .where(eq(schema.claimsTable.id, event.id));
     }
   }
 }
