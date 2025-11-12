@@ -5,15 +5,20 @@
 ### Run indexer
 
 ```bash
-# Install dependencies and build
+#  Install dependencies and build
 npm install
-npm run build
+
+# Fill the environment variables
+cp .env.example .env
 
 # Create db container
 npm run db:up
 
 # Apply database migrations to create the target schema
 npm run db:apply
+
+# Build the application
+npm run build
 
 # Run indexer
 npm run start
