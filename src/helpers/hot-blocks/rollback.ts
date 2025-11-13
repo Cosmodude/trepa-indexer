@@ -1,7 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
 
-import type { DatabaseTransaction } from '../database-types';
 import { schema } from '../../drizzle';
+import type { DatabaseTransaction } from '../database-types';
 import type { DBChange } from './types';
 
 export async function applyRollbackChange(

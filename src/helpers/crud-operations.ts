@@ -52,18 +52,13 @@ export async function updateRecords(
 
   for (const event of predictedEvents) {
     if (event.predictionAccount) {
-      const updateData: Partial<typeof event> = { ...event };
-      delete updateData.id;
-      delete updateData.predictionAccount;
+      const { id: _id, predictionAccount, ...updateData } = event;
 
       await db
         .update(schema.predictionsTable)
         .set(updateData)
         .where(
-          eq(
-            schema.predictionsTable.predictionAccount,
-            event.predictionAccount,
-          ),
+          eq(schema.predictionsTable.predictionAccount, predictionAccount),
         );
     } else if (event.id) {
       await db

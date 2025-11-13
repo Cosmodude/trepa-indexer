@@ -2,9 +2,9 @@ import { config as dotenvConfig } from 'dotenv';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
-dotenvConfig();
-
 import { schema } from '../drizzle';
+
+dotenvConfig();
 
 let pool: Pool | null = null;
 let dbInstance: ReturnType<typeof drizzle> | null = null;

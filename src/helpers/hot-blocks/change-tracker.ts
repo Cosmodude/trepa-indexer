@@ -1,5 +1,5 @@
-import type { DatabaseTransaction } from '../database-types';
 import { NewHotChangeLog, schema } from '../../drizzle';
+import type { DatabaseTransaction } from '../database-types';
 import type { DBChange } from './types';
 
 export class ChangeTracker {

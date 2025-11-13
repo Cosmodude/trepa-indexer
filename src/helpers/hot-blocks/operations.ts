@@ -1,9 +1,9 @@
 import { lte, eq, and } from 'drizzle-orm';
 
-import type { DatabaseTransaction } from '../database-types';
-import { schema } from '../../drizzle';
 import type { HashAndHeight } from './types';
 import { RACE_MSG } from './utils';
+import { schema } from '../../drizzle';
+import type { DatabaseTransaction } from '../database-types';
 
 export async function insertHotBlock(
   tx: DatabaseTransaction,
