@@ -1,5 +1,5 @@
-import { config as dotenvConfig } from 'dotenv';
 import { DataSourceBuilder } from '@subsquid/solana-stream';
+import { config as dotenvConfig } from 'dotenv';
 
 import * as trepa from './abi/trepa';
 

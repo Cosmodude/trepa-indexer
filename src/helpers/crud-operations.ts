@@ -54,6 +54,7 @@ export async function updateRecords(
     if (event.predictionAccount) {
       const updateData: Partial<typeof event> = { ...event };
       delete updateData.id;
+      delete updateData.predictionAccount;
 
       await db
         .update(schema.predictionsTable)

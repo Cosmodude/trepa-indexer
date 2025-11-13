@@ -4,7 +4,7 @@ export function isPredictionRecord(record: unknown): record is NewPrediction {
   return (
     typeof record === 'object' &&
     record !== null &&
-    'stake' in record &&
+    ('stake' in record || 'predictionAccount' in record) &&
     !('amount' in record)
   );
 }

@@ -97,10 +97,7 @@ export function processEventData(
       );
 
       const updatedPredictionEntity: Partial<NewPrediction> = {
-        id: valueUpdatedEvent.predictionAccount,
         predictionAccount: valueUpdatedEvent.predictionAccount,
-        poolAccount: valueUpdatedEvent.poolAccount,
-        predictorAccount: valueUpdatedEvent.predictor,
         prediction: valueUpdatedEvent.prediction.toString(),
         updated_at: timestamp,
       };
@@ -128,10 +125,7 @@ export function processEventData(
         });
 
       const updatedStakeEntity: Partial<NewPrediction> = {
-        id: stakeIncreasedEvent.predictionAccount,
         predictionAccount: stakeIncreasedEvent.predictionAccount,
-        poolAccount: stakeIncreasedEvent.poolAccount,
-        predictorAccount: stakeIncreasedEvent.predictor,
         stake: BigInt(stakeIncreasedEvent.stake.toString()),
         updated_at: timestamp,
       };
