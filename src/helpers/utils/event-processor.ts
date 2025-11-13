@@ -4,6 +4,8 @@ import { type NewPrediction, type NewClaim } from '../../drizzle/db.types';
 export interface EventCollections {
   predictedEvents: NewPrediction[];
   claimedEvents: NewClaim[];
+  updatedPredictionValues: Partial<NewPrediction>[];
+  updatedPredictionStakes: Partial<NewPrediction>[];
 }
 
 export function processEventData(
@@ -13,7 +15,12 @@ export function processEventData(
   txSignature: string,
   collections: EventCollections,
 ): void {
-  const { predictedEvents, claimedEvents } = collections;
+  const {
+    predictedEvents,
+    claimedEvents,
+    updatedPredictionValues,
+    updatedPredictionStakes,
+  } = collections;
 
   const predictedDiscriminator = Buffer.from(
     trepa.events.PredictionCreatedEvent.d8.slice(2),
@@ -75,5 +82,69 @@ export function processEventData(
     }
     return;
   }
+
+  const predictionValueUpdatedDiscriminator = Buffer.from(
+    trepa.events.PredictionValueUpdatedEvent.d8.slice(2),
+    'hex',
+  );
+
+  if (discriminator.equals(predictionValueUpdatedDiscriminator)) {
+    try {
+      const valueUpdatedEvent = trepa.events.PredictionValueUpdatedEvent.decode(
+        {
+          msg: hexData,
+        },
+      );
+
+      const updatedPredictionEntity: Partial<NewPrediction> = {
+        id: valueUpdatedEvent.predictionAccount,
+        predictionAccount: valueUpdatedEvent.predictionAccount,
+        poolAccount: valueUpdatedEvent.poolAccount,
+        predictorAccount: valueUpdatedEvent.predictor,
+        prediction: valueUpdatedEvent.prediction.toString(),
+        updated_at: timestamp,
+      };
+
+      updatedPredictionValues.push(updatedPredictionEntity);
+      console.log(
+        `PredictionValueUpdatedEvent | tx: ${txSignature} | block: ${timestamp.toISOString()} | recorded: ${new Date().toISOString()}`,
+      );
+    } catch (error) {
+      console.error('Failed to decode PredictionValueUpdatedEvent:', error);
+    }
+    return;
+  }
+
+  const predictionStakeIncreasedDiscriminator = Buffer.from(
+    trepa.events.PredictionStakeIncreasedEvent.d8.slice(2),
+    'hex',
+  );
+
+  if (discriminator.equals(predictionStakeIncreasedDiscriminator)) {
+    try {
+      const stakeIncreasedEvent =
+        trepa.events.PredictionStakeIncreasedEvent.decode({
+          msg: hexData,
+        });
+
+      const updatedStakeEntity: Partial<NewPrediction> = {
+        id: stakeIncreasedEvent.predictionAccount,
+        predictionAccount: stakeIncreasedEvent.predictionAccount,
+        poolAccount: stakeIncreasedEvent.poolAccount,
+        predictorAccount: stakeIncreasedEvent.predictor,
+        stake: BigInt(stakeIncreasedEvent.stake.toString()),
+        updated_at: timestamp,
+      };
+
+      updatedPredictionStakes.push(updatedStakeEntity);
+      console.log(
+        `PredictionStakeIncreasedEvent | tx: ${txSignature} | block: ${timestamp.toISOString()} | recorded: ${new Date().toISOString()}`,
+      );
+    } catch (error) {
+      console.error('Failed to decode PredictionStakeIncreasedEvent:', error);
+    }
+    return;
+  }
+
   console.log(`Detected event: ${discriminator.toString('hex')}`);
 }

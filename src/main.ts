@@ -5,8 +5,8 @@ import { config as dotenvConfig } from 'dotenv';
 
 import * as trepa from './abi/trepa';
 import { dataSource, PORTAL_URL } from './config';
-import { processEventData } from './helpers/utils/event-processor';
 import { DrizzleDatabase } from './helpers/database';
+import { processEventData } from './helpers/utils/event-processor';
 
 dotenvConfig();
 
@@ -34,6 +34,8 @@ async function startIndexer() {
       const collections = {
         predictedEvents: [],
         claimedEvents: [],
+        updatedPredictionValues: [],
+        updatedPredictionStakes: [],
       };
 
       console.log(
@@ -110,6 +112,18 @@ async function startIndexer() {
         ];
         await db.upsert(allEvents);
         console.log(`\nUpserted ${allEvents.length} events into database`);
+      }
+
+      if (
+        collections.updatedPredictionValues.length > 0 ||
+        collections.updatedPredictionStakes.length > 0
+      ) {
+        const allUpdates = [
+          ...collections.updatedPredictionValues,
+          ...collections.updatedPredictionStakes,
+        ];
+        await db.update(allUpdates);
+        console.log(`\nUpdated ${allUpdates.length} predictions in database`);
       }
     } catch (error) {
       console.error('Failed to process blocks:', error);

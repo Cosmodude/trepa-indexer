@@ -51,7 +51,20 @@ export async function updateRecords(
   const { predictedEvents, claimedEvents } = classifyRecords(records);
 
   for (const event of predictedEvents) {
-    if (event.id) {
+    if (event.predictionAccount) {
+      const updateData: Partial<typeof event> = { ...event };
+      delete updateData.id;
+
+      await db
+        .update(schema.predictionsTable)
+        .set(updateData)
+        .where(
+          eq(
+            schema.predictionsTable.predictionAccount,
+            event.predictionAccount,
+          ),
+        );
+    } else if (event.id) {
       await db
         .update(schema.predictionsTable)
         .set(event)
