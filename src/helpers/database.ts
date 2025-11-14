@@ -99,10 +99,21 @@ export class DrizzleDatabase {
       let chain = [{ height: state.height, hash: state.hash }, ...state.top];
 
       assertChainContinuity(info.baseHead, info.newBlocks);
-      assert(
-        info.finalizedHead.height <=
-          (maybeLast(info.newBlocks) ?? info.baseHead).height,
-      );
+
+      const lastBlockHeight = (maybeLast(info.newBlocks) ?? info.baseHead).height;
+      const isCatchingUp = info.finalizedHead.height > lastBlockHeight;
+
+      if (isCatchingUp) {
+        console.warn(
+          `Finalized head (${info.finalizedHead.height}) is ahead of last block in batch (${lastBlockHeight}). ` +
+          `This is expected when catching up. Processing batch...`
+        );
+      } else {
+        assert(
+          info.finalizedHead.height <= lastBlockHeight,
+          `Finalized head height (${info.finalizedHead.height}) should not exceed last block height (${lastBlockHeight}) when not catching up`
+        );
+      }
 
       if (!chain.find((b) => b.hash === info.baseHead.hash)) {
         throw new Error(RACE_MSG);
@@ -182,10 +193,20 @@ export class DrizzleDatabase {
         }
       }
 
+      // If finalized head is ahead of all blocks (catching up scenario),
+      // use the last block in the chain as the finalized head
       if (finalizedHeadPos === -1) {
-        throw new Error(
-          `No block found at or before finalized head height ${info.finalizedHead.height} in chain (chain heights: ${chain[0]?.height} to ${chain[chain.length - 1]?.height}, length: ${chain.length})`,
-        );
+        if (isCatchingUp) {
+          console.warn(
+            `Finalized head (${info.finalizedHead.height}) is ahead of all blocks in chain. ` +
+            `Using last block in chain (${chain[chain.length - 1]?.height}) as finalized head.`
+          );
+          finalizedHeadPos = chain.length - 1;
+        } else {
+          throw new Error(
+            `No block found at or before finalized head height ${info.finalizedHead.height} in chain (chain heights: ${chain[0]?.height} to ${chain[chain.length - 1]?.height}, length: ${chain.length})`,
+          );
+        }
       }
 
       const actualFinalizedHead = chain[finalizedHeadPos];
