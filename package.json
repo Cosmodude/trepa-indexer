@@ -1,42 +1,43 @@
 {
-  "name": "trepa-indexer",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "db:up": "docker run --name trepa-indexer-db -e POSTGRES_PASSWORD=password -d -p 5433:5432 postgres",
-    "db:migrate": "drizzle-kit generate",
-    "db:apply": "drizzle-kit migrate",
-    "db:studio": "mkcert -install && drizzle-kit studio --host=localhost --port=8001",
-    "build": "rm -rf lib && tsc",
-    "start": "node lib/main.js",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
-    "format": "prettier --write src/**/*.ts",
-    "format:check": "prettier --check src/**/*.ts"
-  },
-  "dependencies": {
-    "@subsquid/batch-processor": "1.0.0-portal-api.a3f844",
-    "@subsquid/borsh": "^0.3.0",
-    "@subsquid/solana-objects": "0.0.5-portal-api.a3f844",
-    "@subsquid/solana-stream": "1.0.0-portal-api.a3f844",
-    "bs58": "^6.0.0",
-    "dotenv": "^17.2.3",
-    "drizzle-orm": "^0.44.6",
-    "pg": "^8.16.3"
-  },
-  "devDependencies": {
-    "@subsquid/solana-typegen": "^0.6.1",
-    "@types/node": "^24.7.0",
-    "@types/pg": "^8.15.5",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "dotenv-cli": "^10.0.0",
-    "drizzle-kit": "^0.31.5",
-    "eslint": "^8.0.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "prettier": "^3.0.0",
-    "typescript": "^5.9.3"
-  }
+    "name": "trepa-indexer",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "db:up": "docker run --name trepa-indexer-db -e POSTGRES_PASSWORD=password -d -p 5433:5432 postgres",
+        "db:down": "docker stop trepa-indexer-db && docker rm -v trepa-indexer-db",
+        "db:migrate": "drizzle-kit generate",
+        "db:apply": "drizzle-kit migrate",
+        "db:studio": "mkcert -install && drizzle-kit studio --host=localhost --port=8001",
+        "build": "rm -rf lib && tsc",
+        "start": "node lib/main.js",
+        "lint": "eslint src --ext .ts",
+        "lint:fix": "eslint src --ext .ts --fix",
+        "format": "prettier --write src/**/*.ts",
+        "format:check": "prettier --check src/**/*.ts"
+    },
+    "dependencies": {
+        "@subsquid/batch-processor": "1.0.0-portal-api.a3f844",
+        "@subsquid/borsh": "^0.3.0",
+        "@subsquid/solana-objects": "0.0.5-portal-api.a3f844",
+        "@subsquid/solana-stream": "1.0.0-portal-api.a3f844",
+        "bs58": "^6.0.0",
+        "dotenv": "^17.2.3",
+        "drizzle-orm": "^0.44.6",
+        "pg": "^8.16.3"
+    },
+    "devDependencies": {
+        "@subsquid/solana-typegen": "^0.6.1",
+        "@types/node": "^24.7.0",
+        "@types/pg": "^8.15.5",
+        "@typescript-eslint/eslint-plugin": "^6.0.0",
+        "@typescript-eslint/parser": "^6.0.0",
+        "dotenv-cli": "^10.0.0",
+        "drizzle-kit": "^0.31.5",
+        "eslint": "^8.0.0",
+        "eslint-config-prettier": "^9.0.0",
+        "eslint-plugin-import": "^2.29.0",
+        "eslint-plugin-prettier": "^5.0.0",
+        "prettier": "^3.0.0",
+        "typescript": "^5.9.3"
+    }
 }
