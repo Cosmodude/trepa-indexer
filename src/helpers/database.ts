@@ -100,18 +100,19 @@ export class DrizzleDatabase {
 
       assertChainContinuity(info.baseHead, info.newBlocks);
 
-      const lastBlockHeight = (maybeLast(info.newBlocks) ?? info.baseHead).height;
+      const lastBlockHeight = (maybeLast(info.newBlocks) ?? info.baseHead)
+        .height;
       const isCatchingUp = info.finalizedHead.height > lastBlockHeight;
 
       if (isCatchingUp) {
         console.warn(
           `Finalized head (${info.finalizedHead.height}) is ahead of last block in batch (${lastBlockHeight}). ` +
-          `This is expected when catching up. Processing batch...`
+            `This is expected when catching up. Processing batch...`,
         );
       } else {
         assert(
           info.finalizedHead.height <= lastBlockHeight,
-          `Finalized head height (${info.finalizedHead.height}) should not exceed last block height (${lastBlockHeight}) when not catching up`
+          `Finalized head height (${info.finalizedHead.height}) should not exceed last block height (${lastBlockHeight}) when not catching up`,
         );
       }
 
@@ -199,7 +200,7 @@ export class DrizzleDatabase {
         if (isCatchingUp) {
           console.warn(
             `Finalized head (${info.finalizedHead.height}) is ahead of all blocks in chain. ` +
-            `Using last block in chain (${chain[chain.length - 1]?.height}) as finalized head.`
+              `Using last block in chain (${chain[chain.length - 1]?.height}) as finalized head.`,
           );
           finalizedHeadPos = chain.length - 1;
         } else {
