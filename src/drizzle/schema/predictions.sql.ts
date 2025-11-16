@@ -7,6 +7,7 @@ import {
   numeric,
   bigint,
   boolean,
+  smallint,
 } from 'drizzle-orm/pg-core';
 
 export const predictionsTable = pgTable('predictions', {
@@ -27,6 +28,9 @@ export const predictionsTable = pgTable('predictions', {
   prediction: numeric('prediction', { precision: 25, scale: 6 }).notNull(),
   stake: bigint('stake', { mode: 'bigint' }).notNull(),
   isFeePayer: boolean('is_fee_payer').notNull(),
+  bump: smallint('bump').notNull(),
+  isClaimed: boolean('is_claimed').notNull().default(false),
+  lastSyncAt: timestamp('last_sync_at', { withTimezone: false }).notNull(),
 });
 
 export type Prediction = typeof predictionsTable.$inferSelect;

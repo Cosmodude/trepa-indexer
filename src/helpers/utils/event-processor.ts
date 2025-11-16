@@ -6,6 +6,7 @@ export interface EventCollections {
   claimedEvents: NewClaim[];
   updatedPredictionValues: Partial<NewPrediction>[];
   updatedPredictionStakes: Partial<NewPrediction>[];
+  claimedPredictions: Partial<NewPrediction>[];
 }
 
 export function processEventData(
@@ -20,6 +21,7 @@ export function processEventData(
     claimedEvents,
     updatedPredictionValues,
     updatedPredictionStakes,
+    claimedPredictions,
   } = collections;
 
   const predictedDiscriminator = Buffer.from(
@@ -44,6 +46,9 @@ export function processEventData(
         prediction: predictedEvent.prediction.toString(),
         stake: BigInt(predictedEvent.stake.toString()),
         isFeePayer: predictedEvent.feePayer === predictedEvent.predictor,
+        bump: 0,
+        isClaimed: false,
+        lastSyncAt: timestamp,
       };
 
       predictedEvents.push(predictedEventEntity);
@@ -73,7 +78,15 @@ export function processEventData(
         amount: BigInt(claimedEvent.amount.toString()),
       };
 
+      const claimedPredictionUpdate: Partial<NewPrediction> = {
+        predictionAccount: claimedEvent.predictionAccount,
+        isClaimed: true,
+        lastSyncAt: timestamp,
+        updated_at: timestamp,
+      };
+
       claimedEvents.push(claimedEventEntity);
+      claimedPredictions.push(claimedPredictionUpdate);
       console.log(
         `PredictionRewardsClaimedEvent | tx: ${txSignature} | block: ${timestamp.toISOString()} | recorded: ${new Date().toISOString()}`,
       );
@@ -99,6 +112,7 @@ export function processEventData(
       const updatedPredictionEntity: Partial<NewPrediction> = {
         predictionAccount: valueUpdatedEvent.predictionAccount,
         prediction: valueUpdatedEvent.prediction.toString(),
+        lastSyncAt: timestamp,
         updated_at: timestamp,
       };
 
@@ -127,6 +141,7 @@ export function processEventData(
       const updatedStakeEntity: Partial<NewPrediction> = {
         predictionAccount: stakeIncreasedEvent.predictionAccount,
         stake: BigInt(stakeIncreasedEvent.stake.toString()),
+        lastSyncAt: timestamp,
         updated_at: timestamp,
       };
 

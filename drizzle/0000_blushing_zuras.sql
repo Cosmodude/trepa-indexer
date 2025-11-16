@@ -36,7 +36,10 @@ CREATE TABLE "predictions" (
 	"prediction_account" varchar(44) NOT NULL,
 	"prediction" numeric(25, 6) NOT NULL,
 	"stake" bigint NOT NULL,
-	"is_fee_payer" boolean NOT NULL
+	"is_fee_payer" boolean NOT NULL,
+	"bump" smallint NOT NULL,
+	"is_claimed" boolean DEFAULT false NOT NULL,
+	"last_sync_at" timestamp NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "statuses" (

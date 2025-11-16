@@ -36,6 +36,7 @@ async function startIndexer() {
         claimedEvents: [],
         updatedPredictionValues: [],
         updatedPredictionStakes: [],
+        claimedPredictions: [],
       };
 
       console.log(
@@ -116,11 +117,13 @@ async function startIndexer() {
 
       if (
         collections.updatedPredictionValues.length > 0 ||
-        collections.updatedPredictionStakes.length > 0
+        collections.updatedPredictionStakes.length > 0 ||
+        collections.claimedPredictions.length > 0
       ) {
         const allUpdates = [
           ...collections.updatedPredictionValues,
           ...collections.updatedPredictionStakes,
+          ...collections.claimedPredictions,
         ];
         await db.update(allUpdates);
         console.log(`\nUpdated ${allUpdates.length} predictions in database`);
