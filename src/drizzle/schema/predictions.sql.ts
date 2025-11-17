@@ -24,7 +24,9 @@ export const predictionsTable = pgTable('predictions', {
   poolAccount: varchar('pool_account', { length: 44 }).notNull(),
   predictorAccount: varchar('predictor_account', { length: 44 }).notNull(),
   poolTokenAccount: varchar('pool_token_account', { length: 44 }).notNull(),
-  predictionAccount: varchar('prediction_account', { length: 44 }).notNull(),
+  predictionAccount: varchar('prediction_account', { length: 44 })
+    .notNull()
+    .unique(),
   prediction: numeric('prediction', { precision: 25, scale: 6 }).notNull(),
   stake: bigint('stake', { mode: 'bigint' }).notNull(),
   isFeePayer: boolean('is_fee_payer').notNull(),
