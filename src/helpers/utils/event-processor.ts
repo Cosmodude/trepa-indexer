@@ -156,6 +156,6 @@ export function processEventData(
   }
 
   console.log(
-    `Detected unrecognized event: ${discriminator.toString('hex')} | tx: ${txSignature} | block: ${timestamp.toISOString()}`,
+    `Detected event: ${discriminator.toString('hex')} | tx: ${txSignature} | block: ${timestamp.toISOString()}`,
   );
 }
