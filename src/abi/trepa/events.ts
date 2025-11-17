@@ -1,47 +1,137 @@
 import {event} from '../abi.support'
-import {ConfigUpdatedEvent as ConfigUpdatedEvent_, PoolClaimedEvent as PoolClaimedEvent_, PoolCreatedEvent as PoolCreatedEvent_, PoolFinalizedEvent as PoolFinalizedEvent_, PoolPredictedEvent as PoolPredictedEvent_} from './types'
+import {CreatorRoleAcceptedEvent as CreatorRoleAcceptedEvent_, PlatformConfigUpdatedEvent as PlatformConfigUpdatedEvent_, PoolStatusUpdatedEvent as PoolStatusUpdatedEvent_, PredictionAccountClosedEvent as PredictionAccountClosedEvent_, PredictionCreatedEvent as PredictionCreatedEvent_, PredictionPoolCreatedEvent as PredictionPoolCreatedEvent_, PredictionPoolFinalizedEvent as PredictionPoolFinalizedEvent_, PredictionRewardsClaimedEvent as PredictionRewardsClaimedEvent_, PredictionStakeIncreasedEvent as PredictionStakeIncreasedEvent_, PredictionValueUpdatedEvent as PredictionValueUpdatedEvent_, ProgramStatusToggledEvent as ProgramStatusToggledEvent_, ProposeUpdateAccessEvent as ProposeUpdateAccessEvent_, ResolverRoleAcceptedEvent as ResolverRoleAcceptedEvent_, StreakRegisteredEvent as StreakRegisteredEvent_, StreakRewardsClaimedEvent as StreakRewardsClaimedEvent_} from './types'
 
-export type ConfigUpdatedEvent = ConfigUpdatedEvent_
+export type CreatorRoleAcceptedEvent = CreatorRoleAcceptedEvent_
 
-export const ConfigUpdatedEvent = event(
+export const CreatorRoleAcceptedEvent = event(
     {
-        d8: '0xf59e81633c64d6dc',
+        d8: '0x39b8ab1982dfe980',
     },
-    ConfigUpdatedEvent_,
+    CreatorRoleAcceptedEvent_,
 )
 
-export type PoolClaimedEvent = PoolClaimedEvent_
+export type PlatformConfigUpdatedEvent = PlatformConfigUpdatedEvent_
 
-export const PoolClaimedEvent = event(
+export const PlatformConfigUpdatedEvent = event(
     {
-        d8: '0xe8fde8ed0f43731a',
+        d8: '0x36f9808623fbefd4',
     },
-    PoolClaimedEvent_,
+    PlatformConfigUpdatedEvent_,
 )
 
-export type PoolCreatedEvent = PoolCreatedEvent_
+export type PoolStatusUpdatedEvent = PoolStatusUpdatedEvent_
 
-export const PoolCreatedEvent = event(
+export const PoolStatusUpdatedEvent = event(
     {
-        d8: '0x195e4b2f7063353f',
+        d8: '0x683081d0e5c11315',
     },
-    PoolCreatedEvent_,
+    PoolStatusUpdatedEvent_,
 )
 
-export type PoolFinalizedEvent = PoolFinalizedEvent_
+export type PredictionAccountClosedEvent = PredictionAccountClosedEvent_
 
-export const PoolFinalizedEvent = event(
+export const PredictionAccountClosedEvent = event(
     {
-        d8: '0x4691cfbd8aacd0c2',
+        d8: '0xe759f0945174776e',
     },
-    PoolFinalizedEvent_,
+    PredictionAccountClosedEvent_,
 )
 
-export type PoolPredictedEvent = PoolPredictedEvent_
+export type PredictionCreatedEvent = PredictionCreatedEvent_
 
-export const PoolPredictedEvent = event(
+export const PredictionCreatedEvent = event(
     {
-        d8: '0x579c4e56484cff00',
+        d8: '0x8c49db0ab2c3838b',
     },
-    PoolPredictedEvent_,
+    PredictionCreatedEvent_,
+)
+
+export type PredictionPoolCreatedEvent = PredictionPoolCreatedEvent_
+
+export const PredictionPoolCreatedEvent = event(
+    {
+        d8: '0x3bdacd97fe91863e',
+    },
+    PredictionPoolCreatedEvent_,
+)
+
+export type PredictionPoolFinalizedEvent = PredictionPoolFinalizedEvent_
+
+export const PredictionPoolFinalizedEvent = event(
+    {
+        d8: '0xbd1ca442a4754d7e',
+    },
+    PredictionPoolFinalizedEvent_,
+)
+
+export type PredictionRewardsClaimedEvent = PredictionRewardsClaimedEvent_
+
+export const PredictionRewardsClaimedEvent = event(
+    {
+        d8: '0xbdab959e853df703',
+    },
+    PredictionRewardsClaimedEvent_,
+)
+
+export type PredictionStakeIncreasedEvent = PredictionStakeIncreasedEvent_
+
+export const PredictionStakeIncreasedEvent = event(
+    {
+        d8: '0x639385d848ecd151',
+    },
+    PredictionStakeIncreasedEvent_,
+)
+
+export type PredictionValueUpdatedEvent = PredictionValueUpdatedEvent_
+
+export const PredictionValueUpdatedEvent = event(
+    {
+        d8: '0x36497d44ce2674f4',
+    },
+    PredictionValueUpdatedEvent_,
+)
+
+export type ProgramStatusToggledEvent = ProgramStatusToggledEvent_
+
+export const ProgramStatusToggledEvent = event(
+    {
+        d8: '0xf053d05163273cbb',
+    },
+    ProgramStatusToggledEvent_,
+)
+
+export type ProposeUpdateAccessEvent = ProposeUpdateAccessEvent_
+
+export const ProposeUpdateAccessEvent = event(
+    {
+        d8: '0xc7315d1282dacb1c',
+    },
+    ProposeUpdateAccessEvent_,
+)
+
+export type ResolverRoleAcceptedEvent = ResolverRoleAcceptedEvent_
+
+export const ResolverRoleAcceptedEvent = event(
+    {
+        d8: '0x2b0289a109545060',
+    },
+    ResolverRoleAcceptedEvent_,
+)
+
+export type StreakRegisteredEvent = StreakRegisteredEvent_
+
+export const StreakRegisteredEvent = event(
+    {
+        d8: '0xeb2e76bcdafd3d13',
+    },
+    StreakRegisteredEvent_,
+)
+
+export type StreakRewardsClaimedEvent = StreakRewardsClaimedEvent_
+
+export const StreakRewardsClaimedEvent = event(
+    {
+        d8: '0x22857fb1e5291a48',
+    },
+    StreakRewardsClaimedEvent_,
 )
