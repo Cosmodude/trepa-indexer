@@ -61,17 +61,19 @@ export async function updateRecords(
           eq(schema.predictionsTable.predictionAccount, predictionAccount),
         );
     } else if (event.id) {
+      const { id: _id, ...updateData } = event;
       await db
         .update(schema.predictionsTable)
-        .set(event)
+        .set(updateData)
         .where(eq(schema.predictionsTable.id, event.id));
     }
   }
   for (const event of claimedEvents) {
     if (event.id) {
+      const { id: _id, ...updateData } = event;
       await db
         .update(schema.claimsTable)
-        .set(event)
+        .set(updateData)
         .where(eq(schema.claimsTable.id, event.id));
     }
   }
