@@ -155,5 +155,7 @@ export function processEventData(
     return;
   }
 
-  console.log(`Detected event: ${discriminator.toString('hex')}`);
+  console.log(
+    `Detected unrecognized event: ${discriminator.toString('hex')} | tx: ${txSignature} | block: ${timestamp.toISOString()}`,
+  );
 }
